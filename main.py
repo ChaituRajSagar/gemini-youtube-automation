@@ -34,12 +34,12 @@ def main():
         # Note: The upload part might require interactive authentication the first time.
         # Ensure your credentials.json is up-to-date and stored in GitHub Secrets.
         # For simplicity in testing, you might comment this line out first.
-        # upload_to_youtube(
-        #     video_path=video_file,
-        #     title=content["title"],
-        #     description=content["description"],
-        #     tags=content["tags"]
-        # )
+        upload_to_youtube(
+            video_path=video_file,
+            title=content["title"],
+            description=content["description"],
+            tags=content["tags"]
+        )
         
         print(f"✅ --- All steps completed successfully! Video saved at: {video_file} ---")
         
