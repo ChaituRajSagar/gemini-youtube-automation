@@ -19,29 +19,49 @@ jobs:
           python-version: '3.11'
           cache: 'pip' # Caches dependencies for faster runs
 
-      - name: 📦 Install system and Python dependencies
+      - name: 📦 Install, Debug, and Configure Dependencies
         run: |
-          # Update the system's package list
+          # Install system software
           sudo apt-get update
-          
-          # Install the system software
           sudo apt-get install -y imagemagick ffmpeg
           
-          # --- DEFINITIVE FIX for ImageMagick Policy ---
-          # On GitHub's servers, the default ImageMagick policy is too restrictive.
-          # These commands find the policy file and increase the resource limits
-          # to allow the creation of larger, long-form videos.
-          sudo sed -i 's/rights="none" pattern="PS"/rights="read|write" pattern="PS"/' /etc/ImageMagick-6/policy.xml
-          sudo sed -i 's/rights="none" pattern="PDF"/rights="read|write" pattern="PDF"/' /etc/ImageMagick-6/policy.xml
-          sudo sed -i 's/rights="none" pattern="XPS"/rights="read|write" pattern="XPS"/' /etc/ImageMagick-6/policy.xml
-          sudo sed -i 's/<policy domain="resource" name="width" value=".*"\/>/<policy domain="resource" name="width" value="16KP"\/>/' /etc/ImageMagick-6/policy.xml
-          sudo sed -i 's/<policy domain="resource" name="height" value=".*"\/>/<policy domain="resource" name="height" value="16KP"\/>/' /etc/ImageMagick-6/policy.xml
-          sudo sed -i 's/<policy domain="resource" name="memory" value=".*"\/>/<policy domain="resource" name="memory" value="2GiB"\/>/' /etc/ImageMagick-6/policy.xml
-          sudo sed -i 's/<policy domain="resource" name="disk" value=".*"\/>/<policy domain="resource" name="disk" value="4GiB"\/>/' /etc/ImageMagick-6/policy.xml
+          # --- NEW DEBUGGING STEP 1: Find the correct policy file path ---
+          echo "--- [DEBUG] Searching for ImageMagick policy.xml file... ---"
+          POLICY_FILE=$(find /etc -name "policy.xml" 2>/dev/null | grep -i "ImageMagick" | head -n 1)
+          
+          if [ -z "$POLICY_FILE" ]; then
+            echo "❌ CRITICAL: Could not find ImageMagick's policy.xml file! Cannot proceed."
+            exit 1
+          fi
+          echo "✅ [DEBUG] Found policy file at: $POLICY_FILE"
+
+          # --- NEW DEBUGGING STEP 2: Show the policy file BEFORE edits ---
+          echo "--- [DEBUG] Policy file content BEFORE edits: ---"
+          sudo cat "$POLICY_FILE"
+          echo "------------------------------------------------"
+          
+          # --- The Fix Commands ---
+          # We now use the dynamically found $POLICY_FILE variable for robustness.
+          echo "--- Applying policy fixes... ---"
+          sudo sed -i 's/rights="none" pattern="PS"/rights="read|write" pattern="PS"/' "$POLICY_FILE"
+          sudo sed -i 's/rights="none" pattern="PDF"/rights="read|write" pattern="PDF"/' "$POLICY_FILE"
+          sudo sed -i 's/rights="none" pattern="XPS"/rights="read|write" pattern="XPS"/' "$POLICY_FILE"
+          sudo sed -i 's/<policy domain="resource" name="width" value=".*"\/>/<policy domain="resource" name="width" value="16KP"\/>/' "$POLICY_FILE"
+          sudo sed -i 's/<policy domain="resource" name="height" value=".*"\/>/<policy domain="resource" name="height" value="16KP"\/>/' "$POLICY_FILE"
+          sudo sed -i 's/<policy domain="resource" name="memory" value=".*"\/>/<policy domain="resource" name="memory" value="2GiB"\/>/' "$POLICY_FILE"
+          sudo sed -i 's/<policy domain="resource" name="disk" value=".*"\/>/<policy domain="resource" name="disk" value="4GiB"\/>/' "$POLICY_FILE"
+          echo "✅ Policy fixes applied."
+
+          # --- NEW DEBUGGING STEP 3: Show the policy file AFTER edits ---
+          echo "--- [DEBUG] Policy file content AFTER edits: ---"
+          sudo cat "$POLICY_FILE"
+          echo "------------------------------------------------"
           
           # Install Python packages
+          echo "--- Installing Python packages... ---"
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          echo "✅ Python packages installed."
 
       - name: 🔑 Restore API credentials
         run: |
