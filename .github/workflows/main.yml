@@ -21,8 +21,19 @@ jobs:
 
       - name: 📦 Install system and Python dependencies
         run: |
+          # Update the system's package list
           sudo apt-get update
+          
+          # Install the system software
           sudo apt-get install -y imagemagick ffmpeg
+          
+          # --- THIS IS THE FINAL FIX ---
+          # On GitHub's servers, the default ImageMagick policy is too restrictive.
+          # This command uses 'sed' to find the policy file and comment out the
+          # specific rule that blocks moviepy from creating text.
+          sudo sed -i 's/<policy domain="path" rights="none" pattern="@\*"//' /etc/ImageMagick-6/policy.xml
+
+          # Install Python packages
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
