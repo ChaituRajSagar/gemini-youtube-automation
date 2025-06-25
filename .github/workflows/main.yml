@@ -27,15 +27,15 @@ jobs:
           # Install the system software
           sudo apt-get install -y imagemagick ffmpeg
           
-          # --- FINAL FIX for ImageMagick Policy ---
+          # --- DEFINITIVE FIX for ImageMagick Policy ---
           # On GitHub's servers, the default ImageMagick policy is too restrictive.
           # These commands find the policy file and increase the resource limits
           # to allow the creation of larger, long-form videos.
           sudo sed -i 's/rights="none" pattern="PS"/rights="read|write" pattern="PS"/' /etc/ImageMagick-6/policy.xml
           sudo sed -i 's/rights="none" pattern="PDF"/rights="read|write" pattern="PDF"/' /etc/ImageMagick-6/policy.xml
           sudo sed -i 's/rights="none" pattern="XPS"/rights="read|write" pattern="XPS"/' /etc/ImageMagick-6/policy.xml
-          sudo sed -i 's/<policy domain="resource" name="width" value=".*"\/>/<policy domain="resource" name="width" value="8192"\/>/' /etc/ImageMagick-6/policy.xml
-          sudo sed -i 's/<policy domain="resource" name="height" value=".*"\/>/<policy domain="resource" name="height" value="8192"\/>/' /etc/ImageMagick-6/policy.xml
+          sudo sed -i 's/<policy domain="resource" name="width" value=".*"\/>/<policy domain="resource" name="width" value="16KP"\/>/' /etc/ImageMagick-6/policy.xml
+          sudo sed -i 's/<policy domain="resource" name="height" value=".*"\/>/<policy domain="resource" name="height" value="16KP"\/>/' /etc/ImageMagick-6/policy.xml
           sudo sed -i 's/<policy domain="resource" name="memory" value=".*"\/>/<policy domain="resource" name="memory" value="2GiB"\/>/' /etc/ImageMagick-6/policy.xml
           sudo sed -i 's/<policy domain="resource" name="disk" value=".*"\/>/<policy domain="resource" name="disk" value="4GiB"\/>/' /etc/ImageMagick-6/policy.xml
           
