@@ -25,7 +25,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y imagemagick ffmpeg
           
-          # --- NEW DEBUGGING STEP: Find the correct policy file path ---
+          # --- DEBUGGING STEP 1: Find the correct policy file path ---
           echo "--- [DEBUG] Searching for ImageMagick policy.xml file... ---"
           POLICY_FILE=$(find /etc -name "policy.xml" 2>/dev/null | grep -i "ImageMagick" | head -n 1)
           
@@ -47,7 +47,7 @@ jobs:
           sudo sed -i 's/<policy domain="resource" name="disk" value=".*"\/>/<policy domain="resource" name="disk" value="4GiB"\/>/' "$POLICY_FILE"
           echo "✅ Policy fixes applied."
 
-          # --- NEW DEBUGGING STEP: Show the policy file AFTER edits ---
+          # --- DEBUGGING STEP 2: Show the policy file AFTER edits ---
           echo "--- [DEBUG] Policy file content AFTER edits: ---"
           sudo cat "$POLICY_FILE"
           echo "------------------------------------------------"
