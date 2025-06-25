@@ -1,10 +1,10 @@
 # FILE: main.py
-# This is the new main orchestrator. It defines the topics and runs the pipeline.
+# This is a modified version for testing to avoid hitting API limits.
 
 from pathlib import Path
 import datetime
 from src.generator import generate_youtube_content, text_to_speech, create_video
-# from src.uploader import upload_to_youtube # Keep uploader ready for when you enable it
+from src.uploader import upload_to_youtube
 
 def create_and_upload_video(topic, video_type):
     """A reusable function to generate one complete video for a specific topic and type."""
@@ -14,7 +14,6 @@ def create_and_upload_video(topic, video_type):
     output_dir.mkdir(exist_ok=True)
     
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    # Sanitize topic for filename and make it unique
     safe_topic_name = "".join(x for x in topic if x.isalnum() or x in " _-").rstrip()[:30]
     unique_id = f"{today}_{safe_topic_name}_{video_type}"
     audio_file = output_dir / f"voice_{unique_id}.mp3"
@@ -25,8 +24,8 @@ def create_and_upload_video(topic, video_type):
         text_to_speech(content["script"], audio_file)
         create_video(content["script"], audio_file, video_file, video_type=video_type)
         
-        # UPLOAD (This is ready to be uncommented when you are)
-        # print("--- Uploading to YouTube ---")
+        # --- UPLOAD IS NOW ENABLED ---
+        print("--- Uploading to YouTube ---")
         upload_to_youtube(
             video_path=video_file,
             title=content["title"],
@@ -44,26 +43,17 @@ def create_and_upload_video(topic, video_type):
 def main():
     """
     Main function to run the video creation pipeline.
-    It loops through a list of predefined topics.
+    This test version will only create ONE video to save API calls.
     """
-    print("--- Starting Daily AI Video Production ---")
+    print("--- Starting Daily AI Video Production (TEST MODE) ---")
 
-    # --- THIS IS YOUR NEW CONTROL PANEL ---
-    # To change the daily videos, just edit this list of topics.
-    daily_topics = [
-        "The latest update to Google's Gemini family",
-        "A breakthrough in AI-powered medical diagnosis",
-        "How AI is changing the world of digital art",
-        "The impact of Meta's Llama 3 on open-source AI"
-    ]
+    # We will only process the first topic and only create a short video
+    # to confirm the ImageMagick fix works without hitting the API limit.
+    test_topic = "The latest update to Google's Gemini family"
+    
+    create_and_upload_video(topic=test_topic, video_type='short')
 
-    for topic in daily_topics:
-        # For each topic, create both a Short and a long-form video
-        create_and_upload_video(topic=topic, video_type='short')
-        create_and_upload_video(topic=topic, video_type='long')
-
-    print("\n--- All daily video tasks are complete. ---")
-
+    print("\n--- Test run complete. ---")
 
 if __name__ == "__main__":
     main()
