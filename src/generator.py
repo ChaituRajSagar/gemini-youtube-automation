@@ -1,22 +1,23 @@
+# FILE: src/generator.py
+# This is the generator module. It now takes a 'topic' as a direct command.
+
 import os
 import json
 import google.generativeai as genai
 from gtts import gTTS
-from moviepy.editor import TextClip, AudioFileClip, CompositeVideoClip, VideoFileClip
+from moviepy.editor import TextClip, AudioFileClip, CompositeVideoClip
 from moviepy.config import change_settings
 
 # Configure moviepy to work in GitHub Actions
-if os.name == 'posix': # Checks if the OS is Linux-like
+if os.name == 'posix':
     change_settings({"IMAGEMAGICK_BINARY": "/usr/bin/convert"})
 
-def generate_youtube_content(topic="the future of artificial intelligence"):
+def generate_youtube_content(topic, video_type='short'):
     """
-    Generates all YouTube content (title, description, tags, script) in one API call.
-    Uses the Gemini API and requests the output in JSON format for easy parsing.
+    Generates YouTube content for a specific topic provided as an argument.
     """
-    print("🤖 Generating YouTube content with Gemini...")
+    print(f"🤖 Generating content for a '{video_type}' video about '{topic}'...")
     
-    # Configure the Gemini client with the API key from environment variables
     try:
         genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
     except KeyError:
@@ -25,22 +26,33 @@ def generate_youtube_content(topic="the future of artificial intelligence"):
 
     model = genai.GenerativeModel('gemini-1.5-flash')
     
+    # --- PROMPT ENGINEERING BASED ON PROVIDED TOPIC ---
+    if video_type == 'short':
+        script_instructions = "A short, powerful, 2-3 sentence script for the video. The script must be under 50 words."
+        title_instructions = f"A catchy, short title about '{topic}'. IMPORTANT: The title must include the hashtag #Shorts at the end."
+    else: # 'long' video
+        script_instructions = f"A longer, more detailed script of about 3-4 paragraphs (around 250-300 words), explaining the topic '{topic}' clearly."
+        title_instructions = f"A compelling, descriptive title for a video about '{topic}' (do not add #Shorts)."
+
+    # This prompt now uses the topic you pass into the function.
     prompt = f"""
-    You are a creative assistant for a faceless YouTube channel.
-    Generate all content needed for a short, inspirational video about "{topic}".
-    Provide your response as a valid JSON object with the following keys:
-    - "title": A catchy, short title for the video.
-    - "description": A 2-3 sentence description for the YouTube video details.
-    - "tags": A string of 10-15 relevant, comma-separated tags.
-    - "script": A short, powerful, 2-3 sentence script for the video.
+    You are a tech news analyst and content creator for a faceless YouTube channel focused on AI.
+    Your task is to create a complete content package for a video about the specific topic: "{topic}".
+    
+    Provide your response as a single, valid JSON object with the following keys:
+    - "title": {title_instructions}
+    - "description": A 2-3 sentence SEO-friendly description for the YouTube video, summarizing the topic.
+    - "tags": A string of 10-15 relevant, comma-separated tags for the topic.
+    - "script": {script_instructions}
     """
     
     try:
         response = model.generate_content(prompt)
-        # Clean up the response to extract the JSON part
         json_response = response.text.strip().replace("```json", "").replace("```", "")
         content = json.loads(json_response)
-        print("✅ Content generated successfully!")
+        print(f"✅ Content generated successfully for topic: {topic}")
+        # We will add the topic to the content dict to use it later if needed.
+        content['topic'] = topic
         return content
     except Exception as e:
         print(f"❌ ERROR: Failed to generate content with Gemini. {e}")
@@ -57,30 +69,24 @@ def text_to_speech(text, output_path):
         print(f"❌ ERROR: Failed during text-to-speech conversion. {e}")
         raise
 
-def create_video(script_text, audio_path, output_path):
-    """Creates the final video file using MoviePy."""
-    print(f"🎬 Creating video file, saving to {output_path}...")
+def create_video(script_text, audio_path, output_path, video_type='short'):
+    """Creates the final video file, adapting format for Shorts or long videos."""
+    print(f"🎬 Creating '{video_type}' video file, saving to {output_path}...")
+    
+    video_size = (1080, 1920) if video_type == 'short' else (1920, 1080)
+
     try:
         audio_clip = AudioFileClip(str(audio_path))
-        
-        # Create a text clip. This is where ImageMagick is required.
         text_clip = TextClip(
-            script_text,
-            fontsize=70,
-            color='white',
-            size=(1080, 1920), # Vertical format for Shorts/Reels
-            method='caption',
-            font='Arial-Bold'
-        )
-        text_clip = text_clip.set_duration(audio_clip.duration).set_position('center')
+            script_text, fontsize=70, color='white', size=video_size,
+            method='caption', font='Arial-Bold'
+        ).set_duration(audio_clip.duration).set_position('center')
 
-        # Create a final video by setting the audio to the text clip on a black background
         video = CompositeVideoClip([text_clip]).set_audio(audio_clip)
         video.duration = audio_clip.duration
         
-        # Write the final video file
         video.write_videofile(str(output_path), fps=24, codec="libx264", audio_codec="aac")
-        print("✅ Final video created successfully!")
+        print(f"✅ Final '{video_type}' video created successfully!")
     except Exception as e:
         print(f"❌ ERROR: Failed during video creation. {e}")
         raise
