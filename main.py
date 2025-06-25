@@ -27,12 +27,12 @@ def create_and_upload_video(topic, video_type):
         
         # UPLOAD (This is ready to be uncommented when you are)
         # print("--- Uploading to YouTube ---")
-        # upload_to_youtube(
-        #     video_path=video_file,
-        #     title=content["title"],
-        #     description=content["description"],
-        #     tags=content["tags"]
-        # )
+        upload_to_youtube(
+            video_path=video_file,
+            title=content["title"],
+            description=content["description"],
+            tags=content["tags"]
+        )
         
         print(f"✅ --- Successfully completed {video_type.upper()} video process for topic: '{topic}' ---")
         return True
