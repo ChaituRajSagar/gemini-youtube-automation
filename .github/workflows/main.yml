@@ -27,21 +27,24 @@ jobs:
           # Install the system software
           sudo apt-get install -y imagemagick ffmpeg
           
-          # --- THIS IS THE FINAL FIX ---
+          # --- THE CORRECTED FIX for ImageMagick Policy ---
           # On GitHub's servers, the default ImageMagick policy is too restrictive.
           # This command uses 'sed' to find the policy file and comment out the
           # specific rule that blocks moviepy from creating text.
-          sudo sed -i 's/<policy domain="path" rights="none" pattern="@\*"//' /etc/ImageMagick-6/policy.xml
+          sudo sed -i 's/<policy domain="path" rights="none" pattern="@\*"/<!-- & -->/' /etc/ImageMagick-6/policy.xml
 
           # Install Python packages
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: 🔑 Restore API credentials
+        # This step writes the content of your GitHub Secrets into the JSON files
+        # that your Python scripts need to authenticate with Google's APIs.
         run: |
-          echo "<span class="math-inline">\{\{ secrets\.CLIENT\_SECRET\_JSON \}\}" \> client\_secrets\.json
-          echo "</span>{{ secrets.CREDENTIALS_JSON }}" > credentials.json
+          echo "${{ secrets.CLIENT_SECRET_JSON }}" > client_secrets.json
+          echo "${{ secrets.CREDENTIALS_JSON }}" > credentials.json
         shell: bash
+
       - name: 🚀 Run full automation pipeline
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
