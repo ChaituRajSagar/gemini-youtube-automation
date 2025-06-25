@@ -17,6 +17,8 @@ client_secrets.json
 credentials.json
 *.env
 .env
+encoded_client_secret.txt
+encoded_credentials.txt
 
 # VS Code
 .vscode/
