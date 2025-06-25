@@ -58,10 +58,10 @@ jobs:
           pip install -r requirements.txt
           echo "✅ Python packages installed."
 
-      - name: 🔑 Restore API credentials
+      - name: 🔑 Restore API credentials from base64
         run: |
-          echo "${{ secrets.CLIENT_SECRET_JSON }}" > client_secrets.json
-          echo "${{ secrets.CREDENTIALS_JSON }}" > credentials.json
+          echo "${{ secrets.CLIENT_SECRET_B64 }}" | base64 -d > client_secrets.json
+          echo "${{ secrets.CREDENTIALS_B64 }}" | base64 -d > credentials.json
         shell: bash
 
       - name: 🚀 Run full automation pipeline
