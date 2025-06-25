@@ -2,7 +2,7 @@ name: Generate and Upload Daily AI Video
 
 on:
   schedule:
-    - cron: '0 6 * * *' # 6:00 AM UTC (11:30 AM IST) daily
+    #- cron: '0 6 * * *' # 6:00 AM UTC (11:30 AM IST) daily
   workflow_dispatch: # Allows manual running
 
 jobs:
