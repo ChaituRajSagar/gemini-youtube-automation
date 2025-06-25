@@ -1,0 +1,37 @@
+name: Generate and Upload Daily AI Video
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 6:00 AM UTC (11:30 AM IST) daily
+  workflow_dispatch: # Allows manual running
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip' # Caches dependencies for faster runs
+
+      - name: 📦 Install system and Python dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick ffmpeg
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🔑 Restore API credentials
+        run: |
+          echo "<span class="math-inline">\{\{ secrets\.CLIENT\_SECRET\_JSON \}\}" \> client\_secrets\.json
+          echo "</span>{{ secrets.CREDENTIALS_JSON }}" > credentials.json
+        shell: bash
+      - name: 🚀 Run full automation pipeline
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: python main.py

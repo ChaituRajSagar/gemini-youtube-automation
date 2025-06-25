@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+
+# Output
+output/
+*.mp3
+*.mp4
+
+# Credentials & Sensitive Files
+client_secrets.json
+credentials.json
+*.env
+.env
+
+# VS Code
+.vscode/
