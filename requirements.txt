@@ -12,4 +12,4 @@ moviepy==1.0.3
 requests
 
 # For image processing (e.g., thumbnails)
-Pillow
+Pillow==9.5.0
