@@ -5,7 +5,8 @@ import os
 import json
 import google.generativeai as genai
 from gtts import gTTS
-from moviepy.editor import TextClip, AudioFileClip, CompositeVideoClip
+# Import concatenate_videoclips for assembling multiple text clips
+from moviepy.editor import TextClip, AudioFileClip, CompositeVideoClip, concatenate_videoclips
 from moviepy.config import change_settings
 
 # Configure moviepy to work in GitHub Actions
@@ -53,8 +54,6 @@ def generate_youtube_content(topic, video_type='short'):
     """
     print(f"🤖 Generating content for a '{video_type}' video about '{topic}'...")
     
-    # This function no longer needs to configure the API key,
-    # as get_daily_ai_topics() already did it.
     model = genai.GenerativeModel('gemini-1.5-flash')
     
     if video_type == 'short':
@@ -88,22 +87,77 @@ def generate_youtube_content(topic, video_type='short'):
 def text_to_speech(text, output_path):
     """Converts text to speech and saves it as an MP3 file."""
     print(f"🎤 Converting script to speech, saving to {output_path}...")
-    # This function remains the same
     tts = gTTS(text=text, lang='en', slow=False)
     tts.save(output_path)
     print("✅ Speech generated successfully!")
 
 def create_video(script_text, audio_path, output_path, video_type='short'):
-    """Creates the final video file, adapting format for Shorts or long videos."""
+    """
+    Creates the final video file, adapting format for Shorts or long videos.
+    Splits long scripts into multiple TextClips to avoid ImageMagick limits.
+    """
     print(f"🎬 Creating '{video_type}' video file, saving to {output_path}...")
-    # This function remains the same
+    
     video_size = (1080, 1920) if video_type == 'short' else (1920, 1080)
     audio_clip = AudioFileClip(str(audio_path))
-    text_clip = TextClip(
-        script_text, fontsize=70, color='white', size=video_size,
-        method='caption', font='Arial-Bold'
-    ).set_duration(audio_clip.duration).set_position('center')
-    video = CompositeVideoClip([text_clip]).set_audio(audio_clip)
+
+    # Determine chunk size for words based on video type
+    # These values are chosen to keep text clips manageable for ImageMagick
+    if video_type == 'short':
+        # Short videos have a maximum of ~50 words, so 20 words per chunk ensures 2-3 clips.
+        chunk_word_limit = 20
+    else: # 'long' video (approx. 250-300 words)
+        # Long videos need much smaller chunks to prevent ImageMagick errors.
+        chunk_word_limit = 15 # Experiment with values between 10-25 if needed
+
+    words = script_text.split(' ')
+    text_clips = []
+    
+    # Calculate approximate duration per word
+    # This is an estimation. More accurate sync requires advanced TTS features.
+    avg_word_duration = audio_clip.duration / len(words) if words else 0
+
+    current_chunk_words = []
+    for i, word in enumerate(words):
+        current_chunk_words.append(word)
+        # Check if current chunk meets the limit or if it's the very last word of the script
+        if len(current_chunk_words) >= chunk_word_limit or i == len(words) - 1:
+            chunk_text = " ".join(current_chunk_words)
+            
+            # Calculate duration for this specific chunk based on its word count
+            segment_duration = len(current_chunk_words) * avg_word_duration
+            
+            # Ensure a minimum duration to avoid MoviePy issues with extremely short clips
+            if segment_duration < 0.1:
+                segment_duration = 0.1 
+
+            clip = TextClip(
+                chunk_text, 
+                fontsize=70, 
+                color='white', 
+                size=video_size, # Text will wrap within these dimensions
+                method='caption', # Essential for text wrapping
+                font='Arial-Bold'
+            ).set_duration(segment_duration).set_position('center')
+            
+            text_clips.append(clip)
+            current_chunk_words = [] # Reset for the next chunk
+    
+    # Handle cases where no text clips might be generated (e.g., empty script from API)
+    if not text_clips:
+        print("⚠️ Warning: No text clips generated. Creating a single empty text clip for video.")
+        # Create a single, empty text clip matching audio duration to prevent errors
+        text_clips.append(TextClip("", size=video_size).set_duration(audio_clip.duration).set_position('center'))
+
+    # Concatenate all smaller text clips into one continuous visual stream
+    final_text_video = concatenate_videoclips(text_clips, method="compose")
+
+    # Combine the visual text layer with the audio track
+    video = CompositeVideoClip([final_text_video]).set_audio(audio_clip)
+
+    # Set the final video duration to exactly match the audio clip
     video.duration = audio_clip.duration
+    
+    # Write the final video file
     video.write_videofile(str(output_path), fps=24, codec="libx264", audio_codec="aac")
     print(f"✅ Final '{video_type}' video created successfully!")
