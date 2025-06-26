@@ -12,11 +12,11 @@ from moviepy.editor import (
     CompositeVideoClip,
     concatenate_videoclips,
     VideoFileClip,
-    vfx, # ADDED: Import vfx for audio looping
-    CompositeAudioClip # ADDED: Import CompositeAudioClip for combining audio tracks
+    vfx,
+    CompositeAudioClip
 )
 from moviepy.config import change_settings
-from PIL import Image, ImageDraw, ImageFont # ADDED: Imports for thumbnail generation
+from PIL import Image, ImageDraw, ImageFont
 
 # Configure moviepy to work in GitHub Actions
 if os.name == 'posix':
@@ -37,7 +37,6 @@ def get_daily_ai_topics(count=4):
 
     model = genai.GenerativeModel('gemini-1.5-flash')
     
-    # PROMPT MODIFICATION: Focus on developer-relevant AI topics
     prompt = f"""
     You're an experienced AI engineer helping developers stay current.
 
@@ -53,7 +52,6 @@ def get_daily_ai_topics(count=4):
     
     try:
         response = model.generate_content(prompt)
-        # Parse the numbered list into a Python list
         topics = [line.split('. ', 1)[1].strip() for line in response.text.strip().split('\n') if '. ' in line]
         print(f"✅ Found {len(topics)} new topics!")
         return topics
@@ -71,17 +69,12 @@ def generate_youtube_content(topic, video_type='short'):
     model = genai.GenerativeModel('gemini-1.5-flash')
     
     if video_type == 'short':
-        # Prompt for short video script: punchy, under 50 words
         script_instructions = "A punchy, 2-3 sentence voiceover from a developer explaining the idea in under 50 words."
-        # PROMPT MODIFICATION for Short titles: highly clickable, specific format, and relevant hashtags
         title_instructions = f"A highly clickable, punchy title for a YouTube Short video about '{topic}'. Make it attention-grabbing for a dev audience. It MUST start with 'Quick Take:' and end with #Shorts #DevAI."
     else: # 'long' video
-        # Prompt for long video script: detailed, technical clarity, examples, deep explanation
         script_instructions = f"Explain it like a coder would on YouTube — 3-4 paragraphs (~300 words), with technical clarity, examples, or use cases, focusing on deep explanations."
-        # Prompt for long video title: compelling, dev tutorial style, no #Shorts
         title_instructions = f"A compelling title written like a dev tutorial for '{topic}' (do NOT include #Shorts, focus on deep explanation)"
 
-    # PROMPT MODIFICATION: Reinforce developer persona and JSON output, update tags instruction
     prompt = f"""
     You're a software engineer and content creator who makes faceless explainer videos.
 
@@ -115,7 +108,6 @@ def text_to_speech(text, output_path):
     tts.save(output_path)
     print("✅ Speech generated successfully!")
 
-# ADDED FUNCTION: Generate a thumbnail for the video
 def generate_thumbnail(title, output_path, video_type):
     """Generates a video thumbnail using Pillow."""
     print(f"🖼️ Generating thumbnail for: '{title}' ({video_type})...")
@@ -288,7 +280,6 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
                     ).set_duration(segment_duration).set_position('center')
                     
                     valid_text_clips.append(clip)
-                    # print(f"DEBUG: Added TextClip for chunk: '{chunk_text[:30]}...'") # Optional: add debug print
                 except Exception as e:
                     print(f"❌ ERROR: Failed to create TextClip for chunk '{chunk_text[:50]}...': {e}")
             else:
@@ -297,15 +288,13 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
             current_chunk_words = [] # Always reset the chunk words for the next iteration
     
     # Fallback for entirely empty scripts or if all content chunks were skipped
-    # Ensure this fallback clip is a proper, visible MoviePy clip as a last resort
     if not valid_text_clips:
         print("⚠️ Warning: No valid text clips generated. Creating a single fallback text clip.")
-        # Fallback to a simple text clip with default text if no content could be rendered
         fallback_text = "Content Unavailable" if not script_text.strip() else "Video Playback"
         fallback_clip = TextClip(
             fallback_text,
             fontsize=80,
-            color='red', # Make it noticeable
+            color='red',
             size=video_size,
             method='caption',
             font='Arial-Bold'
@@ -315,9 +304,8 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
         valid_text_clips.append(fallback_clip)
         print("✅ Fallback text clip created.")
 
-
     # Concatenate all valid text clips into one continuous visual stream
-    # This should now always receive a non-empty list of valid clips
+    # This list should now always contain at least one valid clip (even if it's the fallback)
     final_text_video_track = concatenate_videoclips(valid_text_clips, method="compose")
 
 
@@ -339,12 +327,14 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
     else:
         print(f"⚠️ Background music file not found at {BACKGROUND_MUSIC_PATH}. Skipping music.")
 
-
+    # CRITICAL FIX: Direct the video composition based on background_clip's existence
     if background_clip:
+        # Composite video with background, text overlay, and combined audio
         video = CompositeVideoClip([background_clip, final_text_video_track]).set_audio(final_audio_track)
     else:
-        print("Using plain text on black background as no suitable Pexels video was found or processed.")
-        video = CompositeVideoClip([final_text_video_track]).set_audio(final_audio_track)
+        # If no background, directly use the text track with combined audio on a black default background
+        print("⚠️ No background video. Falling back to black background with text only.")
+        video = final_text_video_track.set_audio(final_audio_track) # MODIFIED: Direct composition without CompositeVideoClip wrapper
 
     video.duration = audio_clip.duration
     
