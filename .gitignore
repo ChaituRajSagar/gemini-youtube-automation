@@ -9,7 +9,6 @@ venv/
 
 # Output
 output/
-*.mp3
 *.mp4
 
 # Credentials & Sensitive Files
