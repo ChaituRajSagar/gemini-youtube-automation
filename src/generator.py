@@ -205,7 +205,9 @@ def fetch_pexels_background(topic, duration, resolution): # Renamed duration=10,
         print(f"❌ Failed to load or process Pexels background video: {e}") # General error 
         return None
 
-def create_video(script_text, audio_path, output_path, video_type='short'):
+
+#def create_video(script_text, audio_path, output_path, video_type='short'):
+def create_video(script_text, audio_path, output_path, video_type='short', topic=''): # Added 'topic' parameter
     """
     Creates the final video file, adapting format for Shorts or long videos.
     Splits long scripts into multiple TextClips to avoid ImageMagick limits.
@@ -259,7 +261,8 @@ def create_video(script_text, audio_path, output_path, video_type='short'):
     final_text_video_track = concatenate_videoclips(text_clips, method="compose")
 
     # Try fetching a related Pexels video background using the script text as query 
-    background_clip = fetch_pexels_background(script_text, duration=audio_clip.duration, resolution=video_size)
+    #background_clip = fetch_pexels_background(script_text, duration=audio_clip.duration, resolution=video_size)
+    background_clip = fetch_pexels_background(topic, duration=audio_clip.duration, resolution=video_size) # Use 'topic' for Pexels query
 
     # Composite the video: background first, then text overlay with audio 
     if background_clip:

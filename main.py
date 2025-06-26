@@ -22,8 +22,8 @@ def create_and_upload_video(topic, video_type):
     try:
         content = generate_youtube_content(topic=topic, video_type=video_type)
         text_to_speech(content["script"], audio_file)
-        create_video(content["script"], audio_file, video_file, video_type=video_type)
-        
+        #create_video(content["script"], audio_file, video_file, video_type=video_type)
+        create_video(content["script"], audio_file, video_file, video_type=video_type, topic=topic)
         # Enable this when you are ready to upload automatically
         # print("--- Uploading to YouTube ---")
         upload_to_youtube(

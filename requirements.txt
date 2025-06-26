@@ -7,3 +7,6 @@ google-auth-oauthlib
 # Text-to-Speech and Video Editing
 gTTS
 moviepy==1.0.3
+
+# For Pexels API (used for fetching background videos)
+requests
