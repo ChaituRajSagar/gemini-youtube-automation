@@ -12,11 +12,11 @@ from moviepy.editor import (
     CompositeVideoClip,
     concatenate_videoclips,
     VideoFileClip,
-    vfx, # ADDED: Import vfx for audio looping
-    CompositeAudioClip # ADDED: Import CompositeAudioClip for combining audio tracks
+    vfx,
+    CompositeAudioClip
 )
 from moviepy.config import change_settings
-from PIL import Image, ImageDraw, ImageFont # ADDED: Imports for thumbnail generation
+from PIL import Image, ImageDraw, ImageFont
 
 # Configure moviepy to work in GitHub Actions
 if os.name == 'posix':
@@ -37,7 +37,6 @@ def get_daily_ai_topics(count=4):
 
     model = genai.GenerativeModel('gemini-1.5-flash')
     
-    # PROMPT MODIFICATION: Focus on developer-relevant AI topics
     prompt = f"""
     You're an experienced AI engineer helping developers stay current.
 
@@ -53,7 +52,6 @@ def get_daily_ai_topics(count=4):
     
     try:
         response = model.generate_content(prompt)
-        # Parse the numbered list into a Python list
         topics = [line.split('. ', 1)[1].strip() for line in response.text.strip().split('\n') if '. ' in line]
         print(f"✅ Found {len(topics)} new topics!")
         return topics
@@ -71,17 +69,12 @@ def generate_youtube_content(topic, video_type='short'):
     model = genai.GenerativeModel('gemini-1.5-flash')
     
     if video_type == 'short':
-        # Prompt for short video script: punchy, under 50 words
         script_instructions = "A punchy, 2-3 sentence voiceover from a developer explaining the idea in under 50 words."
-        # PROMPT MODIFICATION for Short titles: highly clickable, specific format, and relevant hashtags
         title_instructions = f"A highly clickable, punchy title for a YouTube Short video about '{topic}'. Make it attention-grabbing for a dev audience. It MUST start with 'Quick Take:' and end with #Shorts #DevAI."
     else: # 'long' video
-        # Prompt for long video script: detailed, technical clarity, examples, deep explanation
         script_instructions = f"Explain it like a coder would on YouTube — 3-4 paragraphs (~300 words), with technical clarity, examples, or use cases, focusing on deep explanations."
-        # Prompt for long video title: compelling, dev tutorial style, no #Shorts
         title_instructions = f"A compelling title written like a dev tutorial for '{topic}' (do NOT include #Shorts, focus on deep explanation)"
 
-    # PROMPT MODIFICATION: Reinforce developer persona and JSON output, update tags instruction
     prompt = f"""
     You're a software engineer and content creator who makes faceless explainer videos.
 
@@ -115,36 +108,27 @@ def text_to_speech(text, output_path):
     tts.save(output_path)
     print("✅ Speech generated successfully!")
 
-# ADDED FUNCTION: Generate a thumbnail for the video
 def generate_thumbnail(title, output_path, video_type):
     """Generates a video thumbnail using Pillow."""
     print(f"🖼️ Generating thumbnail for: '{title}' ({video_type})...")
-    # Determine dimensions based on video type
     width, height = (1280, 720) if video_type == 'long' else (720, 1280)
     
-    # Create a dark background image
-    img = Image.new('RGB', (width, height), color=(12, 17, 29)) # Dark blue-ish background
+    img = Image.new('RGB', (width, height), color=(12, 17, 29))
     d = ImageDraw.Draw(img)
     
-    # Try to load a common font, fallback to default
     try:
-        # Note: 'arial.ttf' might not exist on all systems, especially Linux in GitHub Actions.
-        # A more robust solution might involve packaging a font or using a system-agnostic approach.
         font = ImageFont.truetype("arial.ttf", 60)
     except IOError:
         font = ImageFont.load_default()
         print("Warning: 'arial.ttf' not found, using default font for thumbnail.")
 
-    # Basic text wrapping logic for the title
     lines = []
     words = title.split()
     current_line = []
     for word in words:
         test_line = ' '.join(current_line + [word])
-        # Calculate text width to decide on line breaks
         bbox = d.textbbox((0, 0), test_line, font=font)
         text_width = bbox[2] - bbox[0]
-        # Adjust 0.8 as a safe margin for text
         if text_width < width * 0.8:
             current_line.append(word)
         else:
@@ -152,17 +136,15 @@ def generate_thumbnail(title, output_path, video_type):
             current_line = [word]
     lines.append(' '.join(current_line))
     
-    # Calculate vertical position to center the text block
-    total_text_height = len(lines) * 70 # Approximate line height (fontsize + padding)
+    total_text_height = len(lines) * 70
     y_text = (height - total_text_height) / 2
     
     for line in lines:
-        # Recalculate width for each line for accurate centering
         bbox = d.textbbox((0, 0), line, font=font)
         line_width = bbox[2] - bbox[0]
         x_text = (width - line_width) / 2
-        d.text((x_text, y_text), line, font=font, fill=(255, 255, 255)) # White text
-        y_text += 70 # Move to next line position
+        d.text((x_text, y_text), line, font=font, fill=(255, 255, 255))
+        y_text += 70
             
     img.save(output_path)
     print(f"✅ Thumbnail saved to: {output_path}")
@@ -242,7 +224,7 @@ def fetch_pexels_background(topic, duration, resolution):
         
         processed_clip = clip.subclip(0, actual_duration).resize(resolution).without_audio()
         clip.close()
-        os.unlink(temp_path)
+        os.unlink(temp_path) # Ensure temp file is unlinked/deleted
 
         print("✅ Background video processed and ready.")
         return processed_clip
@@ -291,24 +273,46 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
                 current_chunk_words = [] # CRITICAL FIX: Reset the chunk words immediately here
                 continue # Skip creating a clip for this empty chunk
 
-            clip = TextClip(
-                chunk_text, 
-                fontsize=70, 
-                color='white', 
-                size=video_size,
-                method='caption',
-                font='Arial-Bold'
-            ).set_duration(segment_duration).set_position('center')
+            # Only attempt to create TextClip if chunk_text is not empty AFTER stripping
+            # This ensures TextClip is never initialized with an invalid string
+            if chunk_text.strip(): # Double-check to be absolutely safe
+                clip = TextClip(
+                    chunk_text, 
+                    fontsize=70, 
+                    color='white', 
+                    size=video_size,
+                    method='caption',
+                    font='Arial-Bold'
+                ).set_duration(segment_duration).set_position('center')
+                
+                text_clips.append(clip)
+            else:
+                print(f"DEBUG: Final check, chunk_text was still empty after strip, not adding clip at index {i}.")
             
-            text_clips.append(clip)
             current_chunk_words = [] # Reset for the next chunk
     
     # Fallback for entirely empty scripts or if all chunks were skipped
+    # Ensure this fallback clip is always a valid MoviePy clip
     if not text_clips:
         print("⚠️ Warning: No valid text clips generated. Creating a single transparent placeholder text clip.")
-        text_clips.append(TextClip("", size=video_size, color='transparent').set_duration(audio_clip.duration).set_position('center'))
+        # Create a non-visible TextClip with the correct duration and size to prevent errors
+        fallback_clip = TextClip("", size=video_size, color='transparent', font='Arial-Bold')
+        fallback_clip.duration = audio_clip.duration # Set duration explicitly
+        fallback_clip = fallback_clip.set_position('center')
+        text_clips.append(fallback_clip)
 
-    final_text_video_track = concatenate_videoclips(text_clips, method="compose")
+
+    # MODIFIED: Add a check for empty text_clips list before concatenation
+    final_text_video_track = None
+    if text_clips:
+        final_text_video_track = concatenate_videoclips(text_clips, method="compose")
+    else:
+        # This case should ideally not be hit with the fallback above, but as a safeguard
+        print("CRITICAL ERROR: 'text_clips' was unexpectedly empty even after fallback. Creating a dummy track.")
+        final_text_video_track = TextClip("", size=video_size, color='transparent', font='Arial-Bold')
+        final_text_video_track.duration = audio_clip.duration
+        final_text_video_track = final_text_video_track.set_position('center')
+
 
     background_clip = fetch_pexels_background(topic, duration=audio_clip.duration, resolution=video_size)
 
