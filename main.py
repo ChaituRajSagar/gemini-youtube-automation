@@ -3,7 +3,8 @@
 
 from pathlib import Path
 import datetime
-from src.generator import get_daily_ai_topics, generate_youtube_content, text_to_speech, create_video
+# MODIFIED: Import generate_thumbnail from src.generator
+from src.generator import get_daily_ai_topics, generate_youtube_content, text_to_speech, create_video, generate_thumbnail
 from src.uploader import upload_to_youtube
 
 def create_and_upload_video(topic, video_type):
@@ -14,23 +15,35 @@ def create_and_upload_video(topic, video_type):
     output_dir.mkdir(exist_ok=True)
     
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    safe_topic_name = "".join(x for x in topic if x.isalnum() or x in " _-").rstrip()[:30]
+    # Limiting topic name length for unique_id to avoid very long file names
+    safe_topic_name = "".join(x for x in topic if x.isalnum() or x in " _-").rstrip()[:40] 
     unique_id = f"{today}_{safe_topic_name}_{video_type}"
+    
     audio_file = output_dir / f"voice_{unique_id}.mp3"
     video_file = output_dir / f"video_{unique_id}.mp4"
-    
+    thumbnail_file = output_dir / f"thumbnail_{unique_id}.jpg" # ADDED: Thumbnail file path
+
+    # Create an assets directory for things like music if not already present
+    assets_dir = Path("assets/music") # ADDED: Path for music
+    assets_dir.mkdir(parents=True, exist_ok=True) # ADDED: Create assets directory
+
     try:
         content = generate_youtube_content(topic=topic, video_type=video_type)
         text_to_speech(content["script"], audio_file)
-        #create_video(content["script"], audio_file, video_file, video_type=video_type)
+        
+        # MODIFIED: Pass 'topic' to create_video for Pexels search
         create_video(content["script"], audio_file, video_file, video_type=video_type, topic=topic)
-        # Enable this when you are ready to upload automatically
-        # print("--- Uploading to YouTube ---")
+        
+        # ADDED: Generate thumbnail
+        generate_thumbnail(content["title"], thumbnail_file, video_type)
+
+        # ADDED: Pass thumbnail_path to upload_to_youtube
         upload_to_youtube(
             video_path=video_file,
             title=content["title"],
             description=content["description"],
-            tags=content["tags"]
+            tags=content["tags"],
+            thumbnail_path=thumbnail_file # ADDED: Pass thumbnail path
         )
         
         print(f"✅ --- Successfully completed {video_type.upper()} video process for topic: '{topic}' ---")
@@ -48,7 +61,6 @@ def main():
     print("--- Starting Daily AI Video Production ---")
 
     try:
-        # --- THIS IS THE NEW DYNAMIC LOGIC ---
         # First, ask the AI for a list of today's topics.
         daily_topics = get_daily_ai_topics(count=4)
 
@@ -68,3 +80,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

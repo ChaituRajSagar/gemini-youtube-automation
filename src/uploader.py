@@ -54,8 +54,9 @@ def get_authenticated_service():
     return build('youtube', 'v3', credentials=credentials)
 
 
-def upload_to_youtube(video_path, title, description, tags):
-    """Uploads a video to YouTube with the given metadata."""
+# MODIFIED: Added thumbnail_path parameter
+def upload_to_youtube(video_path, title, description, tags, thumbnail_path=None):
+    """Uploads a video to YouTube with the given metadata and optionally a thumbnail."""
     print(f"⬆️ Uploading '{video_path}' to YouTube...")
     try:
         youtube = get_authenticated_service()
@@ -87,9 +88,27 @@ def upload_to_youtube(video_path, title, description, tags):
             if status:
                 print(f"Uploaded {int(status.progress() * 100)}%.")
                 
-        print(f"✅ Video uploaded successfully! Video ID: {response.get('id')}")
-        return response.get('id')
+        video_id = response.get('id')
+        print(f"✅ Video uploaded successfully! Video ID: {video_id}")
+
+        # ADDED: Thumbnail upload logic
+        if thumbnail_path and os.path.exists(thumbnail_path):
+            print(f"⬆️ Uploading thumbnail '{thumbnail_path}' for video ID: {video_id}...")
+            try:
+                thumbnail_media = MediaFileUpload(str(thumbnail_path))
+                youtube.thumbnails().set(
+                    videoId=video_id,
+                    media_body=thumbnail_media
+                ).execute()
+                print("✅ Thumbnail uploaded successfully!")
+            except Exception as e:
+                print(f"❌ ERROR: Failed to upload thumbnail: {e}")
+        else:
+            print("⚠️ No thumbnail path provided or thumbnail file does not exist. Skipping thumbnail upload.")
+
+        return video_id
         
     except Exception as e:
         print(f"❌ ERROR: Failed to upload to YouTube. {e}")
         raise
+
