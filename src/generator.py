@@ -1,12 +1,18 @@
 # FILE: src/generator.py
-# This is the upgraded generator. It now has a new function to discover topics.
 
 import os
 import json
+import requests
+from tempfile import NamedTemporaryFile # Keep this import for temporary file handling
 import google.generativeai as genai
 from gtts import gTTS
-# Import concatenate_videoclips for assembling multiple text clips
-from moviepy.editor import TextClip, AudioFileClip, CompositeVideoClip, concatenate_videoclips
+from moviepy.editor import (
+    TextClip,
+    AudioFileClip,
+    CompositeVideoClip,
+    concatenate_videoclips,
+    VideoFileClip # Keep this import for Pexels video handling
+)
 from moviepy.config import change_settings
 
 # Configure moviepy to work in GitHub Actions
@@ -16,32 +22,36 @@ if os.name == 'posix':
 def get_daily_ai_topics(count=4):
     """
     Calls the Gemini API to generate a list of fresh, recent AI topics.
+    Modified to request developer-focused AI topics.
     """
-    print(f"🤖 Asking Gemini for {count} new AI topics...")
+    print(f"🤖 Asking Gemini for {count} developer-relevant AI topics...") # Log changed to reflect new prompt 
     
     try:
         genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
     except KeyError:
-        print("❌ ERROR: GOOGLE_API_KEY environment variable not found!")
+        print("❌ ERROR: GOOGLE_API_KEY environment variable not found!") # Clarified error message 
         raise
 
     model = genai.GenerativeModel('gemini-1.5-flash')
     
+    # PROMPT MODIFICATION: Focus on developer-relevant AI topics 
     prompt = f"""
-    You are a tech news researcher. Your task is to identify {count} distinct, specific, and interesting recent topics or news items in the world of Artificial Intelligence.
-    Provide your response as a numbered list of topics. Do not add any other text or explanation.
+    You're an experienced AI engineer helping developers stay current.
 
-    For example:
-    1. The latest features in OpenAI's Sora model
-    2. How AI is being used to predict stock market trends
-    3. A new open-source model released by Mistral AI
-    4. The impact of AI on climate change modeling
+    Generate {count} **developer-focused AI topics** — recent trends, open-source projects, practical coding applications, etc. Examples include:
+
+    1. New features in OpenAI’s function calling API
+    2. Training LLMs on personal codebases
+    3. Python libraries simplifying LangChain use
+    4. Real-time inference with quantized models
+
+    Return only a numbered list of topics. No explanations.
     """
     
     try:
         response = model.generate_content(prompt)
         # Parse the numbered list into a Python list
-        topics = [line.split('. ', 1)[1] for line in response.text.strip().split('\n') if '. ' in line]
+        topics = [line.split('. ', 1)[1].strip() for line in response.text.strip().split('\n') if '. ' in line] # Added .strip() for cleaner topics 
         print(f"✅ Found {len(topics)} new topics!")
         return topics
     except Exception as e:
@@ -51,26 +61,34 @@ def get_daily_ai_topics(count=4):
 def generate_youtube_content(topic, video_type='short'):
     """
     Generates YouTube content for a specific topic provided as an argument.
+    Modified to generate content from a coding creator perspective with deep explanations.
     """
-    print(f"🤖 Generating content for a '{video_type}' video about '{topic}'...")
+    print(f"🤖 Generating coder-style content for: '{topic}' ({video_type} video)...") # Log changed to reflect new tone 
     
     model = genai.GenerativeModel('gemini-1.5-flash')
     
     if video_type == 'short':
-        script_instructions = "A short, powerful, 2-3 sentence script for the video. The script must be under 50 words."
-        title_instructions = f"A catchy, short title about '{topic}'. IMPORTANT: The title must include the hashtag #Shorts at the end."
+        # Prompt for short video script: punchy, under 50 words 
+        script_instructions = "A punchy, 2-3 sentence voiceover from a developer explaining the idea in under 50 words."
+        # Prompt for short video title: dev-friendly, with #Shorts 
+        title_instructions = f"A short dev-friendly title ending in #Shorts based on '{topic}'"
     else: # 'long' video
-        script_instructions = f"A longer, more detailed script of about 3-4 paragraphs (around 250-300 words), explaining the topic '{topic}' clearly."
-        title_instructions = f"A compelling, descriptive title for a video about '{topic}' (do not add #Shorts)."
+        # Prompt for long video script: detailed, technical clarity, examples, deep explanation 
+        script_instructions = f"Explain it like a coder would on YouTube — 3-4 paragraphs (~300 words), with technical clarity, examples, or use cases, focusing on deep explanations."
+        # Prompt for long video title: compelling, dev tutorial style, no #Shorts 
+        title_instructions = f"A compelling title written like a dev tutorial for '{topic}' (do NOT include #Shorts, focus on deep explanation)"
 
+    # PROMPT MODIFICATION: Reinforce developer persona and JSON output 
     prompt = f"""
-    You are a tech news analyst and content creator for a faceless YouTube channel focused on AI.
-    Your task is to create a complete content package for a video about the specific topic: "{topic}".
-    Provide your response as a single, valid JSON object with the following keys:
+    You're a software engineer and content creator who makes faceless explainer videos.
+
+    Generate a **JSON response** with:
     - "title": {title_instructions}
-    - "description": A 2-3 sentence SEO-friendly description for the YouTube video, summarizing the topic.
-    - "tags": A string of 10-15 relevant, comma-separated tags for the topic.
+    - "description": 2-sentence summary of the topic for a dev audience, highlighting its relevance to deep technical understanding.
+    - "tags": 10–15 comma-separated dev-relevant keywords, including terms like "AI development", "coding", "machine learning", and specific technologies mentioned.
     - "script": {script_instructions}
+
+    Return only valid JSON. Ensure the script is well-structured for voiceover.
     """
     
     try:
@@ -80,8 +98,11 @@ def generate_youtube_content(topic, video_type='short'):
         print(f"✅ Content generated successfully for topic: {topic}")
         content['topic'] = topic
         return content
+    except json.JSONDecodeError as e: # Catch specific JSON decode error 
+        print(f"❌ JSON parsing error from Gemini response for topic '{topic}': {e}. Raw response: {response.text}") # More informative error 
+        raise
     except Exception as e:
-        print(f"❌ ERROR: Failed to generate content with Gemini. {e}")
+        print(f"❌ ERROR: Failed to generate content with Gemini for topic '{topic}'. {e}") # More informative error 
         raise
 
 def text_to_speech(text, output_path):
@@ -91,73 +112,168 @@ def text_to_speech(text, output_path):
     tts.save(output_path)
     print("✅ Speech generated successfully!")
 
+def fetch_pexels_background(topic, duration, resolution): # Renamed duration=10, resolution=(1080, 1920) parameters for clarity 
+    """
+    Search and download a Pexels video matching the topic.
+    Returns a VideoFileClip trimmed and resized, or None if not found.
+    Incorporated robustness for Pexels API response and video processing. 
+    """
+    print(f"🌄 Searching Pexels for background: '{topic}' (min duration: {duration}s, resolution: {resolution})...") # More detailed logging 
+
+    PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
+    if not PEXELS_API_KEY:
+        print("⚠️ No PEXELS_API_KEY set. Skipping background fetch.") # Informative warning 
+        return None
+
+    headers = {
+        "Authorization": PEXELS_API_KEY
+    }
+
+    params = {
+        "query": topic,
+        "orientation": "portrait" if resolution[0] < resolution[1] else "landscape",
+        "per_page": 5, # Request more videos to have choices 
+        "min_duration": int(duration) # Use Pexels API filter for minimum duration 
+    }
+
+    try:
+        response = requests.get("https://api.pexels.com/videos/search", headers=headers, params=params, timeout=10) # Added timeout 
+        response.raise_for_status() # Raise HTTPError for bad responses (4xx or 5xx) 
+        response_data = response.json()
+
+        if not response_data.get("videos"):
+            print("⚠️ Pexels API returned no videos for the query.") # Specific warning 
+            return None
+
+        # Prioritize videos with appropriate resolution and duration
+        selected_video_url = None
+        for video_entry in response_data["videos"]:
+            for video_file in video_entry["video_files"]:
+                # Prefer mp4, check if resolution is at least the target, and pick the highest quality if multiple exist
+                if (video_file["file_type"] == "video/mp4" and
+                    video_file.get("width") and video_file.get("height") and
+                    video_file["width"] >= resolution[0] and video_file["height"] >= resolution[1]):
+                    selected_video_url = video_file["link"]
+                    break # Found a suitable high-res video, take it
+            if selected_video_url:
+                break
+        
+        if not selected_video_url:
+            print("⚠️ No ideal resolution video found. Falling back to the first available MP4 link.") # Fallback message 
+            # Fallback: take the first video's first MP4 file link if no ideal match
+            for video_entry in response_data["videos"]:
+                for video_file in video_entry["video_files"]:
+                    if video_file["file_type"] == "video/mp4":
+                        selected_video_url = video_file["link"]
+                        break
+                if selected_video_url:
+                    break
+            if not selected_video_url:
+                print("❌ No usable MP4 video files found in Pexels response for fallback.") # Final failure for Pexels 
+                return None
+
+
+        print(f"⬇️ Downloading background video from: {selected_video_url}") # Logging download 
+        video_data_response = requests.get(selected_video_url, stream=True, timeout=30) # Stream download, added timeout 
+        video_data_response.raise_for_status() # Check for download errors 
+
+        # Use NamedTemporaryFile to handle the video data stream 
+        with NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
+            for chunk in video_data_response.iter_content(chunk_size=8192):
+                temp_file.write(chunk)
+            temp_path = temp_file.name
+
+        print(f"✅ Downloaded temporary video to: {temp_path}") # Log temporary path 
+
+        # Load, subclip, resize, and remove audio from the background video 
+        clip = VideoFileClip(temp_path)
+        
+        # Adjust actual duration for subclip if the downloaded clip is shorter than expected
+        actual_duration = min(clip.duration, duration)
+        
+        processed_clip = clip.subclip(0, actual_duration).resize(resolution).without_audio()
+        clip.close() # Explicitly close the original clip to free resources 
+        os.unlink(temp_path) # Clean up the temporary file immediately 
+
+        print("✅ Background video processed and ready.") # Success log 
+        return processed_clip
+
+    except requests.exceptions.RequestException as e: # Catch network/HTTP errors 
+        print(f"❌ Pexels API request or download failed: {e}") # Specific error type 
+        return None
+    except Exception as e: # Catch any other unexpected errors during processing 
+        print(f"❌ Failed to load or process Pexels background video: {e}") # General error 
+        return None
+
 def create_video(script_text, audio_path, output_path, video_type='short'):
     """
     Creates the final video file, adapting format for Shorts or long videos.
     Splits long scripts into multiple TextClips to avoid ImageMagick limits.
+    Now integrates Pexels background videos if available. 
     """
-    print(f"🎬 Creating '{video_type}' video file, saving to {output_path}...")
+    print(f"🎬 Creating '{video_type}' video file, saving to {output_path}...") # Informative log 
     
-    video_size = (1080, 1920) if video_type == 'short' else (1920, 1080)
+    video_size = (1080, 1920) if video_type == 'short' else (1920, 1080) # Determine size based on video type 
     audio_clip = AudioFileClip(str(audio_path))
 
-    # Determine chunk size for words based on video type
-    # These values are chosen to keep text clips manageable for ImageMagick
+    # Determine chunk size for words based on video type for TextClip management 
     if video_type == 'short':
-        # Short videos have a maximum of ~50 words, so 20 words per chunk ensures 2-3 clips.
-        chunk_word_limit = 20
-    else: # 'long' video (approx. 250-300 words)
-        # Long videos need much smaller chunks to prevent ImageMagick errors.
-        chunk_word_limit = 15 # Experiment with values between 10-25 if needed
+        chunk_word_limit = 20 # For shorter scripts, larger chunks are generally fine 
+    else: # 'long' video
+        chunk_word_limit = 15 # Smaller chunks are crucial for long scripts to avoid ImageMagick errors 
 
     words = script_text.split(' ')
     text_clips = []
     
-    # Calculate approximate duration per word
-    # This is an estimation. More accurate sync requires advanced TTS features.
+    # Calculate approximate duration per word for text clip synchronization 
     avg_word_duration = audio_clip.duration / len(words) if words else 0
 
     current_chunk_words = []
     for i, word in enumerate(words):
         current_chunk_words.append(word)
-        # Check if current chunk meets the limit or if it's the very last word of the script
+        # Create a new TextClip when the chunk limit is reached or it's the last word 
         if len(current_chunk_words) >= chunk_word_limit or i == len(words) - 1:
             chunk_text = " ".join(current_chunk_words)
             
-            # Calculate duration for this specific chunk based on its word count
-            segment_duration = len(current_chunk_words) * avg_word_duration
-            
-            # Ensure a minimum duration to avoid MoviePy issues with extremely short clips
-            if segment_duration < 0.1:
-                segment_duration = 0.1 
+            # Ensure each text segment has a non-zero minimum duration 
+            segment_duration = max(len(current_chunk_words) * avg_word_duration, 0.1) 
 
             clip = TextClip(
                 chunk_text, 
-                fontsize=70, 
+                fontsize=70, # Static font size, could be dynamic 
                 color='white', 
-                size=video_size, # Text will wrap within these dimensions
-                method='caption', # Essential for text wrapping
+                size=video_size, # Text wraps within these dimensions 
+                method='caption', # Essential for proper text wrapping 
                 font='Arial-Bold'
             ).set_duration(segment_duration).set_position('center')
             
             text_clips.append(clip)
-            current_chunk_words = [] # Reset for the next chunk
+            current_chunk_words = [] # Reset for the next chunk 
     
-    # Handle cases where no text clips might be generated (e.g., empty script from API)
+    # Handle cases where no text clips might be generated (e.g., empty script from API) 
     if not text_clips:
         print("⚠️ Warning: No text clips generated. Creating a single empty text clip for video.")
-        # Create a single, empty text clip matching audio duration to prevent errors
         text_clips.append(TextClip("", size=video_size).set_duration(audio_clip.duration).set_position('center'))
 
-    # Concatenate all smaller text clips into one continuous visual stream
-    final_text_video = concatenate_videoclips(text_clips, method="compose")
+    # Concatenate all smaller text clips into one continuous visual stream 
+    final_text_video_track = concatenate_videoclips(text_clips, method="compose")
 
-    # Combine the visual text layer with the audio track
-    video = CompositeVideoClip([final_text_video]).set_audio(audio_clip)
+    # Try fetching a related Pexels video background using the script text as query 
+    background_clip = fetch_pexels_background(script_text, duration=audio_clip.duration, resolution=video_size)
 
-    # Set the final video duration to exactly match the audio clip
+    # Composite the video: background first, then text overlay with audio 
+    if background_clip:
+        # Ensure background is the base, text is overlaid 
+        video = CompositeVideoClip([background_clip, final_text_video_track.set_audio(audio_clip)])
+    else:
+        # If no background, just the text clip with audio on a black default background 
+        print("Using plain text on black background as no suitable Pexels video was found or processed.")
+        video = CompositeVideoClip([final_text_video_track]).set_audio(audio_clip)
+
+    # Set the final video duration to exactly match the audio clip 
     video.duration = audio_clip.duration
     
-    # Write the final video file
+    # Write the final video file 
+    print(f"Writing final '{video_type}' video file...") # More specific logging 
     video.write_videofile(str(output_path), fps=24, codec="libx264", audio_codec="aac")
     print(f"✅ Final '{video_type}' video created successfully!")
