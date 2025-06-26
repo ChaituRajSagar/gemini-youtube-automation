@@ -75,12 +75,14 @@ def generate_youtube_content(topic, video_type='short'):
         script_instructions = f"Explain it like a coder would on YouTube — 3-4 paragraphs (~300 words), with technical clarity, examples, or use cases, focusing on deep explanations."
         title_instructions = f"A compelling title written like a dev tutorial for '{topic}' (do NOT include #Shorts, focus on deep explanation)"
 
+    # PROMPT MODIFICATION: MAKE HASHTAGS IN DESCRIPTION EXPLICIT AND MANDATORY
+    # Clarified phrasing and added "REQUIRED" for emphasis to Gemini.
     prompt = f"""
     You're a software engineer and content creator who makes faceless explainer videos.
 
     Generate a **JSON response** with:
     - "title": {title_instructions}
-    - "description": A 2-3 sentence SEO-friendly summary for the YouTube video. Crucially, after the summary, add a double newline (\\n\\n) followed by 5-10 relevant hashtags (e.g., #AI #Coding #LLMs).
+    - "description": A 2-3 sentence SEO-friendly summary for the YouTube video. REQUIRED: Append a double newline (\\n\\n) immediately followed by 5-10 relevant hashtags (e.g., #AI #Coding #LLMs).
     - "tags": A comma-separated string of 10-15 highly relevant keywords for search ranking. These should NOT include # symbols or spaces (e.g., "FederatedLearning,LLMs,PrivacyPreservingML").
     - "script": {script_instructions}
 
@@ -89,7 +91,6 @@ def generate_youtube_content(topic, video_type='short'):
     
     try:
         response = model.generate_content(prompt)
-        # PRE-PROCESSING RAW RESPONSE TO FIX JSON ISSUES FROM GEMINI
         raw_text = response.text.strip()
         
         last_brace_index = raw_text.rfind('}')
@@ -100,13 +101,12 @@ def generate_youtube_content(topic, video_type='short'):
 
         content = json.loads(json_string)
 
-        # POST-PROCESSING: Extract hashtags from description for YouTube's prominent display,
-        # and ensure the main 'tags' field only contains keywords (no #).
         if "description" in content:
             description_lines = content["description"].split('\n')
             clean_description_parts = []
             extracted_hashtags = []
             
+            # Iterate lines from the end to find the hashtag block
             found_hashtag_block = False
             for line in reversed(description_lines):
                 stripped_line = line.strip()
@@ -120,14 +120,20 @@ def generate_youtube_content(topic, video_type='short'):
             
             content["description"] = "\n".join(reversed(clean_description_parts)).strip()
             
+            # Post-process extracted hashtags to ensure they are added to description and tags correctly
             if extracted_hashtags:
+                # Add to description for prominent YouTube display
+                # Ensure a double newline before adding hashtags to description
                 if content["description"] and not content["description"].endswith('\n\n'):
                     content["description"] += "\n\n"
-                content["description"] += " ".join(extracted_hashtags)
+                # Filter out any non-hashtag words that might have been accidentally extracted
+                actual_hashtags = [h for h in extracted_hashtags if h.startswith('#')]
+                content["description"] += " ".join(actual_hashtags) # Add with # for display
 
+                # Add to 'tags' field (without #) for search keywords
                 existing_tags_set = set(tag.strip() for tag in content.get("tags", "").split(',') if tag.strip())
-                for htag in extracted_hashtags:
-                    existing_tags_set.add(htag.lstrip('#'))
+                for htag in actual_hashtags: # Use actual_hashtags here
+                    existing_tags_set.add(htag.lstrip('#')) # Remove # for snippet.tags field
                 content["tags"] = ",".join(list(existing_tags_set))
         
         if "tags" in content:
@@ -344,7 +350,7 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
         _ = final_text_video_track.get_frame(0)
     except Exception as e:
         print(f"❌ CRITICAL: Text track failed at frame 0: {e}. Cannot proceed with video creation.")
-        return False # Return False to indicate video creation failure
+        return False
 
     background_clip = fetch_pexels_background(topic, duration=audio_clip.duration, resolution=video_size)
 
