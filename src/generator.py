@@ -80,8 +80,8 @@ def generate_youtube_content(topic, video_type='short'):
 
     Generate a **JSON response** with:
     - "title": {title_instructions}
-    - "description": 2-sentence summary of the topic for a dev audience, highlighting its relevance to deep technical understanding.
-    - "tags": A string of 10-15 highly relevant, comma-separated tags. Include broad terms like "AI development", "Machine Learning", "Programming", "TechExplained" and specific terms from the topic. For Shorts, include #Shorts #AIshorts.
+    - "description": A 2-3 sentence SEO-friendly summary for the YouTube video. After the summary, add a new line followed by 5-10 relevant hashtags (e.g., #AI #Coding #LLMs).
+    - "tags": A string of 10-15 highly relevant, comma-separated keywords for search ranking (do NOT include # symbols here). Include broad terms like "AI development", "Machine Learning", "Programming", "TechExplained" and specific terms from the topic.
     - "script": {script_instructions}
 
     Return only valid JSON. Ensure the script is well-structured for voiceover.
@@ -91,6 +91,33 @@ def generate_youtube_content(topic, video_type='short'):
         response = model.generate_content(prompt)
         json_response = response.text.strip().replace("```json", "").replace("```", "")
         content = json.loads(json_response)
+
+        # POST-PROCESSING: Ensure hashtags from the description are moved to actual tags if they appear there instead
+        if "description" in content and "#" in content["description"]:
+            desc_lines = content["description"].split('\n')
+            hashtags_from_desc = []
+            clean_description_lines = []
+            
+            for line in desc_lines:
+                if "#" in line:
+                    extracted_hashtags = [word.strip() for word in line.split() if word.startswith('#')]
+                    hashtags_from_desc.extend(extracted_hashtags)
+                else:
+                    clean_description_lines.append(line.strip())
+            
+            content["description"] = "\n".join(clean_description_lines).strip()
+            
+            existing_tags = set(tag.strip() for tag in content.get("tags", "").split(',') if tag.strip())
+            for htag in hashtags_from_desc:
+                existing_tags.add(htag.lstrip('#')) 
+                if content["description"] and not content["description"].endswith('\n\n'):
+                    content["description"] += "\n\n"
+                content["description"] += htag + " "
+
+            content["tags"] = ",".join(list(existing_tags))
+            content["description"] = content["description"].strip()
+
+
         print(f"✅ Content generated successfully for topic: {topic}")
         content['topic'] = topic
         return content
@@ -224,7 +251,7 @@ def fetch_pexels_background(topic, duration, resolution):
         
         processed_clip = clip.subclip(0, actual_duration).resize(resolution).without_audio()
         clip.close()
-        os.unlink(temp_path) # Ensure temp file is unlinked/deleted
+        os.unlink(temp_path)
 
         print("✅ Background video processed and ready.")
         return processed_clip
@@ -242,80 +269,77 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
     """
     Creates the final video file, adapting format for Shorts or long videos.
     Splits long scripts into multiple TextClips to avoid ImageMagick limits.
-    Now integrates Pexels background videos and optional background music.
+    Integrates Pexels background videos and optional background music.
+    Includes safety checks to avoid crashing on broken video clips.
     """
     print(f"🎬 Creating '{video_type}' video file, saving to {output_path}...")
     
     video_size = (1080, 1920) if video_type == 'short' else (1920, 1080)
     audio_clip = AudioFileClip(str(audio_path))
 
-    if video_type == 'short':
-        chunk_word_limit = 20
-    else: # 'long' video
-        chunk_word_limit = 15
-
-    words = script_text.split(' ')
-    valid_text_clips = [] # Changed name to explicitly indicate valid clips
-    
+    chunk_word_limit = 20 if video_type == 'short' else 15
+    words = script_text.split()
     avg_word_duration = audio_clip.duration / len(words) if words else 0
 
+    valid_text_clips = []
     current_chunk_words = []
+
     for i, word in enumerate(words):
         current_chunk_words.append(word)
         if len(current_chunk_words) >= chunk_word_limit or i == len(words) - 1:
             chunk_text = " ".join(current_chunk_words)
-            
-            segment_duration = max(len(current_chunk_words) * avg_word_duration, 0.1) 
+            segment_duration = max(len(current_chunk_words) * avg_word_duration, 0.1)
 
-            # CRITICAL FIX (Revisited): Ensure chunk_text is non-empty before attempting TextClip creation
-            if chunk_text.strip(): # Proceed only if there's actual text
+            if chunk_text.strip():
                 try:
                     clip = TextClip(
-                        chunk_text, 
-                        fontsize=70, 
-                        color='white', 
+                        chunk_text,
+                        fontsize=70,
+                        color='white',
                         size=video_size,
                         method='caption',
                         font='Arial-Bold'
                     ).set_duration(segment_duration).set_position('center')
-                    
                     valid_text_clips.append(clip)
                 except Exception as e:
-                    print(f"❌ ERROR: Failed to create TextClip for chunk '{chunk_text[:50]}...': {e}")
-            else:
-                print(f"DEBUG: Skipping empty or whitespace-only text chunk at index {i}.")
-            
-            current_chunk_words = [] # Always reset the chunk words for the next iteration
-    
-    # Fallback for entirely empty scripts or if all content chunks were skipped
+                    print(f"❌ ERROR: Failed to create TextClip: '{chunk_text[:50]}...': {e}")
+            current_chunk_words = [] # Always reset the chunk here, for all paths
+
     if not valid_text_clips:
-        print("⚠️ Warning: No valid text clips generated. Creating a single fallback text clip.")
-        fallback_text = "Content Unavailable" if not script_text.strip() else "Video Playback"
+        print("⚠️ No valid text clips generated. Creating fallback.")
         fallback_clip = TextClip(
-            fallback_text,
+            "Content Unavailable",
             fontsize=80,
             color='red',
             size=video_size,
             method='caption',
             font='Arial-Bold'
-        )
-        fallback_clip.duration = audio_clip.duration
-        fallback_clip = fallback_clip.set_position('center')
+        ).set_duration(audio_clip.duration).set_position('center')
         valid_text_clips.append(fallback_clip)
-        print("✅ Fallback text clip created.")
 
-    # Concatenate all valid text clips into one continuous visual stream
-    # This list should now always contain at least one valid clip (even if it's the fallback)
     final_text_video_track = concatenate_videoclips(valid_text_clips, method="compose")
 
+    # Sanity check on text track
+    try:
+        _ = final_text_video_track.get_frame(0)
+    except Exception as e:
+        print(f"❌ CRITICAL: Text track failed at frame 0: {e}. Cannot proceed with video creation.")
+        # MODIFIED: Return None to signal failure to the calling function (main.py)
+        return None 
 
     background_clip = fetch_pexels_background(topic, duration=audio_clip.duration, resolution=video_size)
+
+    if background_clip:
+        try:
+            _ = background_clip.get_frame(0)
+        except Exception as e:
+            print(f"⚠️ Background clip failed to render first frame: {e}. Discarding it.")
+            background_clip = None
 
     final_audio_track = audio_clip
     if os.path.exists(BACKGROUND_MUSIC_PATH):
         try:
-            music_clip = AudioFileClip(BACKGROUND_MUSIC_PATH)
-            music_clip = music_clip.volumex(0.15)
+            music_clip = AudioFileClip(BACKGROUND_MUSIC_PATH).volumex(0.15)
             if music_clip.duration < audio_clip.duration:
                 music_clip = music_clip.fx(vfx.loop, duration=audio_clip.duration)
             else:
@@ -327,17 +351,22 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
     else:
         print(f"⚠️ Background music file not found at {BACKGROUND_MUSIC_PATH}. Skipping music.")
 
-    # CRITICAL FIX: Direct the video composition based on background_clip's existence
+    # Build final video
     if background_clip:
-        # Composite video with background, text overlay, and combined audio
         video = CompositeVideoClip([background_clip, final_text_video_track]).set_audio(final_audio_track)
     else:
-        # If no background, directly use the text track with combined audio on a black default background
-        print("⚠️ No background video. Falling back to black background with text only.")
-        video = final_text_video_track.set_audio(final_audio_track) # MODIFIED: Direct composition without CompositeVideoClip wrapper
+        print("⚠️ Using fallback black background (text only).")
+        video = final_text_video_track.set_audio(final_audio_track)
 
     video.duration = audio_clip.duration
-    
-    print(f"Writing final '{video_type}' video file...")
-    video.write_videofile(str(output_path), fps=24, codec="libx264", audio_codec="aac")
-    print(f"✅ Final '{video_type}' video created successfully!")
+    print(f"📼 Writing final '{video_type}' video to {output_path}...")
+    try:
+        video.write_videofile(str(output_path), fps=24, codec="libx264", audio_codec="aac")
+        print(f"✅ Final '{video_type}' video created successfully!")
+        # MODIFIED: Return True to indicate successful creation
+        return True 
+    except Exception as e:
+        print(f"❌ CRITICAL ERROR during video writing for '{video_type}' video: {e}")
+        # MODIFIED: Return False to indicate failure
+        return False
+
