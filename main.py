@@ -62,8 +62,9 @@ def main():
 
     try:
         # First, ask the AI for a list of today's topics.
-        daily_topics = get_daily_ai_topics(count=4)
-
+        # daily_topics = get_daily_ai_topics(count=4)
+        
+        daily_topics = get_daily_ai_topics(count=1) # For testing: retrieve only 1 topic
         if not daily_topics:
             print("Could not retrieve daily topics. Exiting.")
             return
