@@ -254,10 +254,9 @@ def fetch_pexels_background(topic, duration, resolution):
         print(f"❌ Failed to load or process Pexels background video: {e}")
         return None
 
-# ADDED: Path for background music (you'd need to place your music file here)
 BACKGROUND_MUSIC_PATH = "assets/music/bg_music.mp3"
 
-def create_video(script_text, audio_path, output_path, video_type='short', topic=''): # MODIFIED: Added 'topic' parameter
+def create_video(script_text, audio_path, output_path, video_type='short', topic=''):
     """
     Creates the final video file, adapting format for Shorts or long videos.
     Splits long scripts into multiple TextClips to avoid ImageMagick limits.
@@ -268,7 +267,6 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
     video_size = (1080, 1920) if video_type == 'short' else (1920, 1080)
     audio_clip = AudioFileClip(str(audio_path))
 
-    # Determine chunk size for words based on video type for TextClip management
     if video_type == 'short':
         chunk_word_limit = 20
     else: # 'long' video
@@ -277,7 +275,6 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
     words = script_text.split(' ')
     text_clips = []
     
-    # Calculate approximate duration per word for text clip synchronization
     avg_word_duration = audio_clip.duration / len(words) if words else 0
 
     current_chunk_words = []
@@ -287,6 +284,12 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
             chunk_text = " ".join(current_chunk_words)
             
             segment_duration = max(len(current_chunk_words) * avg_word_duration, 0.1) 
+
+            # FIX FOR NONE TYPE ERROR: Ensure chunk_text is not empty or just whitespace before creating TextClip
+            if not chunk_text.strip(): # Check if chunk_text is empty or just whitespace
+                print(f"DEBUG: Skipping empty or whitespace-only text chunk at index {i}.")
+                current_chunk_words = [] # CRITICAL FIX: Reset the chunk words immediately here
+                continue # Skip creating a clip for this empty chunk
 
             clip = TextClip(
                 chunk_text, 
@@ -298,24 +301,22 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
             ).set_duration(segment_duration).set_position('center')
             
             text_clips.append(clip)
-            current_chunk_words = []
+            current_chunk_words = [] # Reset for the next chunk
     
+    # Fallback for entirely empty scripts or if all chunks were skipped
     if not text_clips:
-        print("⚠️ Warning: No text clips generated. Creating a single empty text clip for video.")
-        text_clips.append(TextClip("", size=video_size).set_duration(audio_clip.duration).set_position('center'))
+        print("⚠️ Warning: No valid text clips generated. Creating a single transparent placeholder text clip.")
+        text_clips.append(TextClip("", size=video_size, color='transparent').set_duration(audio_clip.duration).set_position('center'))
 
     final_text_video_track = concatenate_videoclips(text_clips, method="compose")
 
-    # Try fetching a related Pexels video background using the original topic as query
-    background_clip = fetch_pexels_background(topic, duration=audio_clip.duration, resolution=video_size) # MODIFIED: Used 'topic' for query
+    background_clip = fetch_pexels_background(topic, duration=audio_clip.duration, resolution=video_size)
 
-    # ADDED: Background Music Integration
     final_audio_track = audio_clip
     if os.path.exists(BACKGROUND_MUSIC_PATH):
         try:
             music_clip = AudioFileClip(BACKGROUND_MUSIC_PATH)
-            # Set music volume low and loop/trim to match video duration
-            music_clip = music_clip.volumex(0.15) # Set background music volume (e.g., 15%)
+            music_clip = music_clip.volumex(0.15)
             if music_clip.duration < audio_clip.duration:
                 music_clip = music_clip.fx(vfx.loop, duration=audio_clip.duration)
             else:
@@ -329,16 +330,13 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
 
 
     if background_clip:
-        # Composite video with background, text overlay, and combined audio
-        video = CompositeVideoClip([background_clip, final_text_video_track]).set_audio(final_audio_track) # MODIFIED: Uses final_audio_track
+        video = CompositeVideoClip([background_clip, final_text_video_track]).set_audio(final_audio_track)
     else:
-        # If no background, just text clip with combined audio on a black default background
         print("Using plain text on black background as no suitable Pexels video was found or processed.")
-        video = CompositeVideoClip([final_text_video_track]).set_audio(final_audio_track) # MODIFIED: Uses final_audio_track
+        video = CompositeVideoClip([final_text_video_track]).set_audio(final_audio_track)
 
     video.duration = audio_clip.duration
     
     print(f"Writing final '{video_type}' video file...")
     video.write_videofile(str(output_path), fps=24, codec="libx264", audio_codec="aac")
     print(f"✅ Final '{video_type}' video created successfully!")
-
