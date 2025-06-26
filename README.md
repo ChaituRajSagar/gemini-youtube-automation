@@ -6,7 +6,7 @@ This project automates the process of generating content and uploading videos to
 
 Here's a visual summary of the bot's daily performance and workflow:
 
-![Gemini YouTube Automation Daily Report Infographic](images/infographic.jpg)
+![Gemini YouTube Automation Daily Report Infographic](images/infographic.png)
 
 ## Project Structure
 
