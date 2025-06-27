@@ -3,7 +3,7 @@
 This project automates the process of generating content and uploading videos to YouTube. It is structured to facilitate easy management of the source code and workflows.
 
 ## Project Structure
-
+```text
 gemini-youtube-automation/
 ├── .github/
 │   └── workflows/
@@ -15,7 +15,7 @@ gemini-youtube-automation/
 ├── .gitignore               # Files and directories to ignore in version control
 ├── main.py                  # Main entry point to run the application
 └── requirements.txt         # List of Python packages needed
-
+```
 
 ## Setup Instructions
 
