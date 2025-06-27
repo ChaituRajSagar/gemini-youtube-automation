@@ -20,7 +20,7 @@ gemini-youtube-automation/
 ## Setup Instructions
 
 1. **Clone the repository:**
-git clone https://github.com/yourusername/gemini-youtube-automation.git
+git clone https://github.com/ChaituRajSagar/gemini-youtube-automation.git
 cd gemini-youtube-automation
 
 
