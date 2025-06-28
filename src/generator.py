@@ -380,7 +380,8 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
     
     video_size = (1080, 1920) if video_type == 'short' else (1920, 1080)
     audio_clip = AudioFileClip(str(audio_path))
-
+    final_audio_track = audio_clip # ✅ Fix: ensure it's always defined
+    
     chunk_word_limit = 20 if video_type == 'short' else 15
     words = script_text.split()
     avg_word_duration = audio_clip.duration / len(words) if words else 0
@@ -466,7 +467,7 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
     #         print(f"⚠️ Background clip failed to render first frame: {e}. Discarding it.")
     #         background_clip = None
 
-    final_audio_track = audio_clip
+    # final_audio_track = audio_clip
     if os.path.exists(BACKGROUND_MUSIC_PATH):
         try:
             music_clip = AudioFileClip(BACKGROUND_MUSIC_PATH).volumex(0.15)
