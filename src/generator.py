@@ -22,6 +22,9 @@ from PIL import Image, ImageDraw, ImageFont
 if os.name == 'posix':
     change_settings({"IMAGEMAGICK_BINARY": "/usr/bin/convert"})
 
+# Add this near the top of the file
+FALLBACK_IMAGE_PATH = "assets/fallback.jpg"
+
 def get_daily_ai_topics(count=4):
     """
     Calls the Gemini API to generate a list of fresh, recent AI topics.
@@ -203,22 +206,101 @@ def generate_thumbnail(title, output_path, video_type):
     print(f"✅ Thumbnail saved to: {output_path}")
 
 
+# def fetch_pexels_background(topic, duration, resolution):
+#     """
+#     Search and download a Pexels video matching the topic.
+#     Returns a VideoFileClip trimmed and resized, or None if not found.
+#     """
+#     print(f"🌄 Searching Pexels for background: '{topic}' (min duration: {duration}s, resolution: {resolution})...")
+
+#     PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
+#     if not PEXELS_API_KEY:
+#         print("⚠️ No PEXELS_API_KEY set. Skipping background fetch.")
+#         return None
+
+#     headers = {
+#         "Authorization": PEXELS_API_KEY
+#     }
+
+#     params = {
+#         "query": topic,
+#         "orientation": "portrait" if resolution[0] < resolution[1] else "landscape",
+#         "per_page": 5,
+#         "min_duration": int(duration)
+#     }
+
+#     try:
+#         response = requests.get("https://api.pexels.com/videos/search", headers=headers, params=params, timeout=10)
+#         response.raise_for_status()
+#         response_data = response.json()
+
+#         if not response_data.get("videos"):
+#             print("⚠️ Pexels API returned no videos for the query.")
+#             return None
+
+#         selected_video_url = None
+#         for video_entry in response_data["videos"]:
+#             for video_file in video_entry["video_files"]:
+#                 if (video_file["file_type"] == "video/mp4" and
+#                     video_file.get("width") and video_file.get("height") and
+#                     video_file["width"] >= resolution[0] and video_file["height"] >= resolution[1]):
+#                     selected_video_url = video_file["link"]
+#                     break
+#             if selected_video_url:
+#                 break
+        
+#         if not selected_video_url:
+#             print("⚠️ No ideal resolution video found. Falling back to the first available MP4 link.")
+#             for video_entry in response_data["videos"]:
+#                 for video_file in video_entry["video_files"]:
+#                     if video_file["file_type"] == "video/mp4":
+#                         selected_video_url = video_file["link"]
+#                         break
+#                 if selected_video_url:
+#                     break
+#             if not selected_video_url:
+#                 print("❌ No usable MP4 video files found in Pexels response for fallback.")
+#                 return None
+
+
+#         print(f"⬇️ Downloading background video from: {selected_video_url}")
+#         video_data_response = requests.get(selected_video_url, stream=True, timeout=30)
+#         video_data_response.raise_for_status()
+
+#         with NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
+#             for chunk in video_data_response.iter_content(chunk_size=8192):
+#                 temp_file.write(chunk)
+#             temp_path = temp_file.name
+
+#         print(f"✅ Downloaded temporary video to: {temp_path}")
+
+#         clip = VideoFileClip(temp_path)
+        
+#         actual_duration = min(clip.duration, duration)
+        
+#         processed_clip = clip.subclip(0, actual_duration).resize(resolution).without_audio()
+#         clip.close()
+#         os.unlink(temp_path)
+
+#         print("✅ Background video processed and ready.")
+#         return processed_clip
+
+#     except requests.exceptions.RequestException as e:
+#         print(f"❌ Pexels API request or download failed: {e}")
+#         return None
+#     except Exception as e:
+#         print(f"❌ Failed to load or process Pexels background video: {e}")
+#         return None
+
 def fetch_pexels_background(topic, duration, resolution):
-    """
-    Search and download a Pexels video matching the topic.
-    Returns a VideoFileClip trimmed and resized, or None if not found.
-    """
     print(f"🌄 Searching Pexels for background: '{topic}' (min duration: {duration}s, resolution: {resolution})...")
 
     PEXELS_API_KEY = os.getenv("PEXELS_API_KEY")
     if not PEXELS_API_KEY:
         print("⚠️ No PEXELS_API_KEY set. Skipping background fetch.")
-        return None
+        return None, None
 
-    headers = {
-        "Authorization": PEXELS_API_KEY
-    }
-
+    headers = {"Authorization": PEXELS_API_KEY}
     params = {
         "query": topic,
         "orientation": "portrait" if resolution[0] < resolution[1] else "landscape",
@@ -233,7 +315,7 @@ def fetch_pexels_background(topic, duration, resolution):
 
         if not response_data.get("videos"):
             print("⚠️ Pexels API returned no videos for the query.")
-            return None
+            return None, None
 
         selected_video_url = None
         for video_entry in response_data["videos"]:
@@ -245,7 +327,7 @@ def fetch_pexels_background(topic, duration, resolution):
                     break
             if selected_video_url:
                 break
-        
+
         if not selected_video_url:
             print("⚠️ No ideal resolution video found. Falling back to the first available MP4 link.")
             for video_entry in response_data["videos"]:
@@ -255,10 +337,10 @@ def fetch_pexels_background(topic, duration, resolution):
                         break
                 if selected_video_url:
                     break
-            if not selected_video_url:
-                print("❌ No usable MP4 video files found in Pexels response for fallback.")
-                return None
 
+        if not selected_video_url:
+            print("❌ No usable MP4 video files found in Pexels response for fallback.")
+            return None, None
 
         print(f"⬇️ Downloading background video from: {selected_video_url}")
         video_data_response = requests.get(selected_video_url, stream=True, timeout=30)
@@ -270,25 +352,21 @@ def fetch_pexels_background(topic, duration, resolution):
             temp_path = temp_file.name
 
         print(f"✅ Downloaded temporary video to: {temp_path}")
-
         clip = VideoFileClip(temp_path)
-        
         actual_duration = min(clip.duration, duration)
-        
         processed_clip = clip.subclip(0, actual_duration).resize(resolution).without_audio()
-        clip.close()
-        os.unlink(temp_path)
 
         print("✅ Background video processed and ready.")
-        return processed_clip
+        return processed_clip, temp_path
 
     except requests.exceptions.RequestException as e:
         print(f"❌ Pexels API request or download failed: {e}")
-        return None
+        return None, None
     except Exception as e:
         print(f"❌ Failed to load or process Pexels background video: {e}")
-        return None
+        return None, None
 
+# Path to background music file
 BACKGROUND_MUSIC_PATH = "assets/music/bg_music.mp3"
 
 def create_video(script_text, audio_path, output_path, video_type='short', topic=''):
@@ -351,8 +429,8 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
     except Exception as e:
         print(f"❌ CRITICAL: Text track failed at frame 0: {e}. Cannot proceed with video creation.")
         return False
-
-    background_clip = fetch_pexels_background(topic, duration=audio_clip.duration, resolution=video_size)
+    
+    background_clip, temp_video_path = fetch_pexels_background(topic, duration=audio_clip.duration, resolution=video_size)
 
     if background_clip:
         try:
@@ -360,6 +438,33 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
         except Exception as e:
             print(f"⚠️ Background clip failed to render first frame: {e}. Discarding it.")
             background_clip = None
+            temp_video_path = None
+
+    # Fallback to static image if video fails
+    if not background_clip and os.path.exists(FALLBACK_IMAGE_PATH):
+        try:
+            from moviepy.editor import ImageClip
+            background_clip = ImageClip(FALLBACK_IMAGE_PATH).set_duration(audio_clip.duration).resize(video_size)
+            print("🖼️ Fallback image used as background.")
+        except Exception as e:
+            print(f"❌ Failed to use fallback image: {e}")
+            background_clip = None
+
+    # Final fallback: black background
+    if background_clip:
+        video = CompositeVideoClip([background_clip, final_text_video_track]).set_audio(final_audio_track)
+    else:
+        print("⚠️ No background video or image. Using black background.")
+        video = final_text_video_track.set_audio(final_audio_track)
+
+    # background_clip = fetch_pexels_background(topic, duration=audio_clip.duration, resolution=video_size)
+
+    # if background_clip:
+    #     try:
+    #         _ = background_clip.get_frame(0)
+    #     except Exception as e:
+    #         print(f"⚠️ Background clip failed to render first frame: {e}. Discarding it.")
+    #         background_clip = None
 
     final_audio_track = audio_clip
     if os.path.exists(BACKGROUND_MUSIC_PATH):
@@ -392,3 +497,12 @@ def create_video(script_text, audio_path, output_path, video_type='short', topic
     except Exception as e:
         print(f"❌ CRITICAL ERROR during video writing for '{video_type}' video: {e}")
         return False
+    
+    # Cleanup temporary video file
+    if temp_video_path and os.path.exists(temp_video_path):
+        try:
+           os.remove(temp_video_path)
+           print(f"🧹 Cleaned up temporary file: {temp_video_path}")
+        except Exception as e:
+            print(f"⚠️ Failed to delete temporary file: {e}")
+
