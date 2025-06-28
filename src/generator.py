@@ -3,6 +3,7 @@
 import os
 import json
 import requests
+import re
 from tempfile import NamedTemporaryFile
 import google.generativeai as genai
 from gtts import gTTS
@@ -22,6 +23,10 @@ from moviepy.video.fx.loop import loop  # ✅ Added for looping background
 # Configure moviepy to work in GitHub Actions
 if os.name == 'posix':
     change_settings({"IMAGEMAGICK_BINARY": "/usr/bin/convert"})
+
+def remove_emojis(text):
+    return re.sub(r'[^\x00-\x7F]+', '', text)
+
 
 FALLBACK_IMAGE_PATH = "assets/fallback.jpg"
 BACKGROUND_MUSIC_PATH = "assets/music/bg_music.mp3"
@@ -263,7 +268,9 @@ def text_to_speech(text, output_path):
 
 def generate_thumbnail(title, output_path, video_type):
     """Generates a video thumbnail using Pillow."""
+    # print(f"🖼️ Generating thumbnail for: '{title}' ({video_type})...")
     print(f"🖼️ Generating thumbnail for: '{title}' ({video_type})...")
+    title = remove_emojis(title)
     width, height = (1280, 720) if video_type == 'long' else (720, 1280)
 
     img = Image.new('RGB', (width, height), color=(12, 17, 29))
