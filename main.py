@@ -130,7 +130,7 @@ def produce_lesson_videos(lesson):
         short_desc = f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n#AI #Programming #Tech"
         upload_to_youtube(
             short_video_path,
-            short_title,
+            short_title.strip(),  # strip again to be safe
             short_desc,
             "AI, Shorts, TechTip",
             short_thumb_path

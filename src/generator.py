@@ -201,62 +201,120 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
     final_bg.save(path)
     return str(path)
 
+# def create_video(slide_paths, audio_path, output_path, video_type):
+
+#     """Creates a final video from slides and audio with robust audio mixing and compatible encoding."""
+#     print(f"🎬 Creating {video_type} video...")
+#     try:
+#         if not slide_paths:
+#             raise ValueError("Cannot create video with no slides.")
+
+#         # Load the main voiceover audio
+#         audio_clip = AudioFileClip(str(audio_path))
+#         final_audio = audio_clip # Default to just the voiceover
+
+#         # Safely add background music if it exists
+#         if BACKGROUND_MUSIC_PATH.exists():
+#             print("🎵 Adding background music...")
+#             music_clip = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.15) # Lower music volume
+
+#             # Ensure music is the exact same length as the voiceover
+#             if music_clip.duration > audio_clip.duration:
+#                 music_clip = music_clip.subclip(0, audio_clip.duration)
+#             else:
+#                 music_clip = music_clip.fx(vfx.loop, duration=audio_clip.duration)
+            
+#             # Combine the voiceover (slightly boosted) and the prepared background music
+#             final_audio = CompositeAudioClip([audio_clip.volumex(1.2), music_clip])
+#         else:
+#             print(f"⚠️ Background music file not found at {BACKGROUND_MUSIC_PATH}, skipping music.")
+        
+#         # Calculate slide duration based on the voiceover length
+#         # slide_duration = audio_clip.duration / len(slide_paths)
+#         # slide_duration *= 1.15  # ✅ 15% extra padding
+#         # # Create video from image slides with fade transitions
+#         # image_clips = [ImageClip(path).set_duration(slide_duration).fadein(0.5).fadeout(0.5) for path in slide_paths]
+#         slide_duration = audio_clip.duration / len(slide_paths)
+#         image_clips = []
+#         for i, path in enumerate(slide_paths):
+#             duration = slide_duration + 1 if i == len(slide_paths) - 1 else slide_duration
+#             image_clips.append(ImageClip(path).set_duration(duration).fadein(0.5).fadeout(0.5))
+#         # Concatenate all image clips into a single video
+#         video = concatenate_videoclips(image_clips, method="compose")
+        
+#         # Set the final, combined audio track to the video
+#         # video.set_audio(final_audio)
+#         print(f"🕒 Audio clip duration: {audio_clip.duration:.2f} seconds")
+#         video = video.set_audio(final_audio)  # ✅ Required!
+        
+#         # --- MODIFIED: Write the final video file with more compatible parameters ---
+#         video.write_videofile(
+#             str(output_path), 
+#             fps=24, 
+#             codec="libx264", 
+#             audio_codec="aac",
+#             audio_bitrate="192k",    # Set a standard audio bitrate
+#             preset="medium"          # A good balance of encoding speed and file size
+#         )
+#         print(f"✅ {video_type.capitalize()} video created successfully!")
+
+#         # # ✅ Clean up audio file after rendering
+#         # try:
+#         #     os.remove(audio_path)
+#         #     print(f"🧹 Cleaned up audio file: {audio_path}")
+#         # except Exception as e:
+#         #     print(f"⚠️ Could not delete temporary audio file: {e}")
+
+#     except Exception as e:
+#         print(f"❌ ERROR during video creation: {e}")
+#         raise
+
 def create_video(slide_paths, audio_path, output_path, video_type):
-    """Creates a final video from slides and audio with robust audio mixing and compatible encoding."""
+    """Creates a final video from slides and audio with precise sync and smooth transitions."""
     print(f"🎬 Creating {video_type} video...")
     try:
         if not slide_paths:
             raise ValueError("Cannot create video with no slides.")
 
-        # Load the main voiceover audio
+        # Load voiceover
         audio_clip = AudioFileClip(str(audio_path))
-        final_audio = audio_clip # Default to just the voiceover
+        final_audio = audio_clip
 
-        # Safely add background music if it exists
+        # Add background music if available
         if BACKGROUND_MUSIC_PATH.exists():
             print("🎵 Adding background music...")
-            music_clip = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.15) # Lower music volume
-
-            # Ensure music is the exact same length as the voiceover
+            music_clip = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.15)
             if music_clip.duration > audio_clip.duration:
                 music_clip = music_clip.subclip(0, audio_clip.duration)
             else:
                 music_clip = music_clip.fx(vfx.loop, duration=audio_clip.duration)
-            
-            # Combine the voiceover (slightly boosted) and the prepared background music
             final_audio = CompositeAudioClip([audio_clip.volumex(1.2), music_clip])
         else:
-            print(f"⚠️ Background music file not found at {BACKGROUND_MUSIC_PATH}, skipping music.")
-        
-        # Calculate slide duration based on the voiceover length
-        slide_duration = audio_clip.duration / len(slide_paths)
-        slide_duration *= 1.15  # ✅ 15% extra padding
-        # Create video from image slides with fade transitions
-        image_clips = [ImageClip(path).set_duration(slide_duration).fadein(0.5).fadeout(0.5) for path in slide_paths]
-        video = concatenate_videoclips(image_clips, method="compose")
-        
-        # Set the final, combined audio track to the video
-        # video.set_audio(final_audio)
-        print(f"🕒 Audio clip duration: {audio_clip.duration:.2f} seconds")
-        video = video.set_audio(final_audio)  # ✅ Required!
-        
-        # --- MODIFIED: Write the final video file with more compatible parameters ---
+            print("⚠️ No background music found.")
+
+        # Distribute slide timing with last slide absorbing drift
+        slide_count = len(slide_paths)
+        base_duration = audio_clip.duration / slide_count
+        padding = 0.3  # slight buffer
+        image_clips = []
+        for i, path in enumerate(slide_paths):
+            if i == slide_count - 1:
+                duration = audio_clip.duration - (base_duration + padding) * (slide_count - 1)
+            else:
+                duration = base_duration + padding
+            image_clips.append(ImageClip(path).set_duration(duration).fadein(0.5).fadeout(0.5))
+
+        video = concatenate_videoclips(image_clips, method="compose").set_audio(final_audio)
+
         video.write_videofile(
-            str(output_path), 
-            fps=24, 
-            codec="libx264", 
+            str(output_path),
+            fps=24,
+            codec="libx264",
             audio_codec="aac",
-            audio_bitrate="192k",    # Set a standard audio bitrate
-            preset="medium"          # A good balance of encoding speed and file size
+            audio_bitrate="192k",
+            preset="medium"
         )
         print(f"✅ {video_type.capitalize()} video created successfully!")
-
-        # # ✅ Clean up audio file after rendering
-        # try:
-        #     os.remove(audio_path)
-        #     print(f"🧹 Cleaned up audio file: {audio_path}")
-        # except Exception as e:
-        #     print(f"⚠️ Could not delete temporary audio file: {e}")
 
     except Exception as e:
         print(f"❌ ERROR during video creation: {e}")
