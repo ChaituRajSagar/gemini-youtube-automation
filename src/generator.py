@@ -139,6 +139,11 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
     bg_image = bg_image.resize((width, height)).filter(ImageFilter.GaussianBlur(5))
     darken_layer = Image.new('RGBA', bg_image.size, (0, 0, 0, 150))
     final_bg = Image.alpha_composite(bg_image, darken_layer).convert("RGB")
+    if is_thumbnail and video_type == 'long':
+        w, h = final_bg.size
+        if h > w:
+            print("⚠️ Detected vertical thumbnail for long video. Rotating and resizing to 1920x1080...")
+            final_bg = final_bg.transpose(Image.ROTATE_270).resize((1920, 1080))
     draw = ImageDraw.Draw(final_bg)
 
     try:
@@ -194,12 +199,6 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
             slide_num_text = f"Slide {slide_number} of {total_slides}"
             slide_num_bbox = draw.textbbox((0, 0), slide_num_text, font=footer_font)
             draw.text((width - slide_num_bbox[2] - 40, height - footer_height + 12), slide_num_text, font=footer_font, fill=(180, 180, 180))
-    if is_thumbnail and video_type == 'long':
-        w, h = final_bg.size
-        if h > w:
-            print("⚠️ Detected vertical thumbnail for long video. Rotating and resizing to 1920x1080...")
-            final_bg = final_bg.transpose(Image.ROTATE_270).resize((1920, 1080))
-
     file_prefix = "thumbnail" if is_thumbnail else f"slide_{slide_number:02d}"
     path = output_dir / f"{file_prefix}.png"
     final_bg.save(path)

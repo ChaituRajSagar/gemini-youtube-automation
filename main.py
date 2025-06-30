@@ -40,21 +40,11 @@ def get_content_plan():
                 json.dump(new_plan, f, indent=2)
             return new_plan
 
-# def get_content_plan():
-#     if not CONTENT_PLAN_FILE.exists():
-#         new_plan = generate_curriculum()
-#         with open(CONTENT_PLAN_FILE, 'w') as f:
-#             json.dump(new_plan, f, indent=2)
-#         print(f"✅ New curriculum saved to {CONTENT_PLAN_FILE}")
-#         return new_plan
-#     else:
-#         with open(CONTENT_PLAN_FILE, 'r') as f:
-#             return json.load(f)
 
+def update_content_plan(plan):
+    with open(CONTENT_PLAN_FILE, 'w') as f:
+        json.dump(plan, f, indent=2)
 
-# def update_content_plan(plan):
-#     with open(CONTENT_PLAN_FILE, 'w') as f:
-#         json.dump(plan, f, indent=2)
 
 
 def produce_lesson_videos(lesson):
@@ -154,7 +144,10 @@ def produce_lesson_videos(lesson):
         if not highlight:
             highlight = f"AI Quick Tip: {lesson['title']}"
         short_title = f"{highlight[:90].rstrip()} #Shorts"
-        short_desc = f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n#AI #Programming #Tech #Developer"
+        # short_desc = f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n#AI #Programming #Tech #Developer"
+        short_desc = (f"{lesson_content['short_form_highlight']}\n\n"
+                      f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n"
+                      f"{hashtags}")
         upload_to_youtube(
             short_video_path,
             short_title.strip(),
@@ -204,7 +197,7 @@ def main():
                 print(f"❌ Failed producing lesson: {lesson['title']}")
                 traceback.print_exc()
             finally:
-                update_content_plan(plan)
+                content_plan(plan)
                 print("📦 Content plan updated.")
                 print(f"✅ Updated content plan for lesson: {lesson['title']}")
     except Exception as e:
