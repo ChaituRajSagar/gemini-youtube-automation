@@ -8,5 +8,8 @@ google-auth-oauthlib
 gTTS
 moviepy==1.0.3
 
+# For Pexels API
+requests
+
 # For image processing (e.g., slides, thumbnails)
 Pillow==9.5.0
