@@ -197,7 +197,7 @@ def main():
                 print(f"❌ Failed producing lesson: {lesson['title']}")
                 traceback.print_exc()
             finally:
-                content_plan(plan)
+                update_content_plan(plan)
                 print("📦 Content plan updated.")
                 print(f"✅ Updated content plan for lesson: {lesson['title']}")
     except Exception as e:
