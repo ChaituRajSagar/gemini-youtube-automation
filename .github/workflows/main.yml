@@ -59,6 +59,13 @@ jobs:
           name: audio-debug-files
           path: output/*.wav
 
+      - name: 🎥 Upload Final Video for Debugging
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-videos
+          path: output/*.mp4
+
       - name: 💾 Commit and push content plan changes
         # Only run this step if the python script was successful
         if: steps.production-run.outcome == 'success'
