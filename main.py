@@ -18,22 +18,43 @@ CONTENT_PLAN_FILE = Path("content_plan.json")
 OUTPUT_DIR = Path("output")
 LESSONS_PER_RUN = 1
 
-
 def get_content_plan():
     if not CONTENT_PLAN_FILE.exists():
+        print("📄 content_plan.json not found. Generating new plan...")
         new_plan = generate_curriculum()
         with open(CONTENT_PLAN_FILE, 'w') as f:
             json.dump(new_plan, f, indent=2)
         print(f"✅ New curriculum saved to {CONTENT_PLAN_FILE}")
         return new_plan
     else:
-        with open(CONTENT_PLAN_FILE, 'r') as f:
-            return json.load(f)
+        try:
+            with open(CONTENT_PLAN_FILE, 'r') as f:
+                plan = json.load(f)
+            if not plan.get("lessons") or not isinstance(plan["lessons"], list):
+                raise ValueError("⚠️ Invalid or empty lesson plan detected.")
+            return plan
+        except Exception as e:
+            print(f"❌ ERROR loading existing plan: {e}. Regenerating...")
+            new_plan = generate_curriculum()
+            with open(CONTENT_PLAN_FILE, 'w') as f:
+                json.dump(new_plan, f, indent=2)
+            return new_plan
+
+# def get_content_plan():
+#     if not CONTENT_PLAN_FILE.exists():
+#         new_plan = generate_curriculum()
+#         with open(CONTENT_PLAN_FILE, 'w') as f:
+#             json.dump(new_plan, f, indent=2)
+#         print(f"✅ New curriculum saved to {CONTENT_PLAN_FILE}")
+#         return new_plan
+#     else:
+#         with open(CONTENT_PLAN_FILE, 'r') as f:
+#             return json.load(f)
 
 
-def update_content_plan(plan):
-    with open(CONTENT_PLAN_FILE, 'w') as f:
-        json.dump(plan, f, indent=2)
+# def update_content_plan(plan):
+#     with open(CONTENT_PLAN_FILE, 'w') as f:
+#         json.dump(plan, f, indent=2)
 
 
 def produce_lesson_videos(lesson):
