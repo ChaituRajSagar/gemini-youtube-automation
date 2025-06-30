@@ -122,7 +122,11 @@ def produce_lesson_videos(lesson):
     if long_video_id:
         print("⏳ Waiting 30 seconds before uploading the short...")
         time.sleep(30)
-        short_title = f"{lesson_content['short_form_highlight'][:95]} #Shorts"
+        # short_title = f"{lesson_content['short_form_highlight'][:95]} #Shorts"
+        highlight = (lesson_content.get('short_form_highlight') or '').strip()
+        if not highlight:
+            highlight = f"AI Quick Tip: {lesson['title']}"  # fallback title if blank
+        short_title = f"{highlight[:95]} #Shorts"
         short_desc = f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n#AI #Programming #Tech"
         upload_to_youtube(
             short_video_path,
@@ -169,7 +173,7 @@ def main():
     except Exception as e:
         print("❌ Critical error in main()")
         traceback.print_exc()
-        
+
     # ✅ CLEANUP: Remove leftover .wav files after everything finishes
     try:
         for file in OUTPUT_DIR.glob("*.wav"):

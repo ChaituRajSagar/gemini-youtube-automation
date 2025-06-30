@@ -230,7 +230,7 @@ def create_video(slide_paths, audio_path, output_path, video_type):
         
         # Calculate slide duration based on the voiceover length
         slide_duration = audio_clip.duration / len(slide_paths)
-        
+        slide_duration *= 1.15  # ✅ 15% extra padding
         # Create video from image slides with fade transitions
         image_clips = [ImageClip(path).set_duration(slide_duration).fadein(0.5).fadeout(0.5) for path in slide_paths]
         video = concatenate_videoclips(image_clips, method="compose")
