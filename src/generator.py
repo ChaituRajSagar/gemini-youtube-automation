@@ -251,12 +251,12 @@ def create_video(slide_paths, audio_path, output_path, video_type):
         )
         print(f"✅ {video_type.capitalize()} video created successfully!")
 
-        # ✅ Clean up audio file after rendering
-        try:
-            os.remove(audio_path)
-            print(f"🧹 Cleaned up audio file: {audio_path}")
-        except Exception as e:
-            print(f"⚠️ Could not delete temporary audio file: {e}")
+        # # ✅ Clean up audio file after rendering
+        # try:
+        #     os.remove(audio_path)
+        #     print(f"🧹 Cleaned up audio file: {audio_path}")
+        # except Exception as e:
+        #     print(f"⚠️ Could not delete temporary audio file: {e}")
 
     except Exception as e:
         print(f"❌ ERROR during video creation: {e}")
