@@ -82,7 +82,10 @@ def produce_lesson_videos(lesson):
         print("Waiting for 30 seconds before uploading the short...")
         time.sleep(30)
         
-        short_title = f"{lesson_content['short_form_highlight']} #Shorts"
+        # short_title = f"{lesson_content['short_form_highlight']} #Shorts"
+        highlight_text = lesson_content['short_form_highlight']
+        max_highlight_len = 100 - len(" #Shorts") # Max length for the highlight is 92
+        short_title = f"{highlight_text[:max_highlight_len]} #Shorts"
         short_desc = f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n#AI #Programming #Tech"
         upload_to_youtube(short_video_path, short_title, short_desc, "AI, Shorts, TechTip", short_thumb_path)
         return long_video_id
