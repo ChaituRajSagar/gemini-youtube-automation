@@ -186,40 +186,6 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
     final_bg.save(path)
     return str(path)
 
-# def create_video(slide_paths, audio_path, output_path, video_type):
-#     """Creates a final video from slides and audio with robust audio mixing."""
-#     print(f"🎬 Creating {video_type} video...")
-#     try:
-#         if not slide_paths:
-#             raise ValueError("Cannot create video with no slides.")
-
-#         audio_clip = AudioFileClip(str(audio_path))
-#         final_audio = audio_clip
-
-#         if BACKGROUND_MUSIC_PATH.exists():
-#             print("🎵 Adding background music...")
-#             music_clip = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.15)
-            
-#             if music_clip.duration > audio_clip.duration:
-#                 music_clip = music_clip.subclip(0, audio_clip.duration)
-#             else:
-#                 music_clip = music_clip.fx(vfx.loop, duration=audio_clip.duration)
-            
-#             final_audio = CompositeAudioClip([audio_clip.volumex(1.2), music_clip])
-        
-#         slide_duration = audio_clip.duration / len(slide_paths)
-#         image_clips = [ImageClip(path).set_duration(slide_duration).fadein(0.5).fadeout(0.5) for path in slide_paths]
-        
-#         video = concatenate_videoclips(image_clips, method="compose")
-#         video.set_audio(final_audio)
-        
-#         video.write_videofile(str(output_path), fps=24, codec="libx264", audio_codec="aac")
-#         print(f"✅ {video_type.capitalize()} video created successfully!")
-
-#     except Exception as e:
-#         print(f"❌ ERROR during video creation: {e}")
-#         raise
-
 def create_video(slide_paths, audio_path, output_path, video_type):
     """Creates a final video from slides and audio with robust audio mixing and compatible encoding."""
     print(f"🎬 Creating {video_type} video...")
