@@ -224,9 +224,13 @@ def create_video(slide_paths, audio_path, output_path, video_type):
             
             final_audio = CompositeAudioClip([audio_clip.volumex(1.2), music_clip])
         
-        slide_duration = audio_clip.duration / len(slide_paths)
-        image_clips = [ImageClip(path).set_duration(slide_duration).fadein(0.5).fadeout(0.5) for path in slide_paths]
-        
+        slide_duration = (audio_clip.duration / len(slide_paths)) * 1.15
+
+        image_clips = []
+        for i, path in enumerate(slide_paths):
+            duration = slide_duration + 2 if i == len(slide_paths) - 1 else slide_duration
+            image_clips.append(ImageClip(path).set_duration(duration).fadein(0.5).fadeout(0.5))
+
         video = concatenate_videoclips(image_clips, method="compose")
         video = video.set_audio(final_audio)
         
