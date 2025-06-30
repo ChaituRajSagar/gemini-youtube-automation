@@ -1,3 +1,6 @@
+# FILE: main.py
+# FINAL VERSION: Includes logic for Intro/Outro slides and branded shorts text.
+
 import os
 import json
 import datetime
@@ -46,11 +49,19 @@ def produce_lesson_videos(lesson):
 
     # --- Long-Form ---
     print("\n--- Producing Long-Form Video ---")
+
+    # NEW: Define Intro and Outro slide content
+    intro_slide = {"title": lesson['title'], "content": f"Chapter {lesson['chapter']} | Part {lesson['part']}"}
+    outro_slide = {"title": "Thanks for Watching!", "content": "Like, Share & Subscribe for more daily AI content!\n#AIforDevelopers"}
+    
+    # NEW: Combine slides into a complete presentation structure
+    all_long_form_slides = [intro_slide] + lesson_content['long_form_slides'] + [outro_slide]
+
+    # NEW: Update script to include text from all slides for a consistent voiceover
     long_form_script = f"Hello and welcome to AI for Developers. I'm {YOUR_NAME}. In today's lesson, {lesson['title']}. "
-    long_form_script += " ".join(s['content'] for s in lesson_content['long_form_slides'])
-    long_form_script += (
-    "\n\nThanks for watching! If you found this helpful, make sure to subscribe to our channel, "
-    "hit the like button, and click the bell icon so you don't miss any future lessons on AI for Developers.")
+    long_form_script += " ".join(s['content'] for s in lesson_content['long_form_slides']) # Main content from Gemini
+    long_form_script += " Thanks for watching! If you found this helpful, make sure to subscribe to our channel and hit the like button."
+
     long_form_audio_mp3_path = OUTPUT_DIR / f"long_audio_{unique_id}.mp3"
     long_form_audio_path = text_to_speech(long_form_script, long_form_audio_mp3_path)
     print(f"🔊 Long-form audio path: {long_form_audio_path}, exists: {long_form_audio_path.exists()}")
@@ -58,8 +69,9 @@ def produce_lesson_videos(lesson):
     long_form_slides_dir = OUTPUT_DIR / f"slides_long_{unique_id}"
     print("🖼️ Generating professional slides...")
     long_form_slide_paths = []
-    total_slides = len(lesson_content['long_form_slides'])
-    for i, slide in enumerate(lesson_content['long_form_slides']):
+    # NEW: Loop over the combined list of all slides
+    total_slides = len(all_long_form_slides)
+    for i, slide in enumerate(all_long_form_slides):
         slide_path = generate_visuals(
             output_dir=long_form_slides_dir,
             video_type='long',
@@ -81,14 +93,16 @@ def produce_lesson_videos(lesson):
 
     # --- Short Form ---
     print("\n--- Producing Short Video ---")
-    short_script = f"{lesson_content['short_form_highlight']} For the full lesson, check out our channel. Link in the description!"
+    # NEW: The script for the short itself does not need to change, only the visual content
+    short_script = f"{lesson_content['short_form_highlight']}"
     short_audio_mp3_path = OUTPUT_DIR / f"short_audio_{unique_id}.mp3"
     short_audio_path = text_to_speech(short_script, short_audio_mp3_path)
 
     short_slides_dir = OUTPUT_DIR / f"slides_short_{unique_id}"
+    # NEW: Add your branded hashtag to the slide content for the short
     short_slide_content = {
         "title": "Quick Tip!",
-        "content": lesson_content['short_form_highlight']
+        "content": f"{lesson_content['short_form_highlight']}\n\n#AI for developers by chaitanya"
     }
     short_slide_paths = [generate_visuals(
         output_dir=short_slides_dir,
@@ -124,17 +138,16 @@ def produce_lesson_videos(lesson):
     if long_video_id:
         print("⏳ Waiting 30 seconds before uploading the short...")
         time.sleep(30)
-        # short_title = f"{lesson_content['short_form_highlight'][:95]} #Shorts"
         highlight = (lesson_content.get('short_form_highlight') or '').strip()
         if not highlight:
             highlight = f"AI Quick Tip: {lesson['title']}"
-        short_title = f"{highlight[:90].rstrip()} #Shorts"  # limit to 90 chars max
-        short_desc = f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n#AI #Programming #Tech"
+        short_title = f"{highlight[:90].rstrip()} #Shorts"
+        short_desc = f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n#AI #Programming #Tech #Developer"
         upload_to_youtube(
             short_video_path,
-            short_title.strip(),  # strip again to be safe
+            short_title.strip(),
             short_desc,
-            "AI, Shorts, TechTip",
+            "AI,Shorts,TechTip",
             short_thumb_path
         )
         return long_video_id
@@ -176,7 +189,6 @@ def main():
         print("❌ Critical error in main()")
         traceback.print_exc()
 
-    # ✅ CLEANUP: Remove leftover .wav files after everything finishes
     try:
         for file in OUTPUT_DIR.glob("*.wav"):
             file.unlink()
