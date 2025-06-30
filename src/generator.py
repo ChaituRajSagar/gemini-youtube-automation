@@ -7,10 +7,13 @@ import requests
 from io import BytesIO
 import google.generativeai as genai
 from gtts import gTTS
-from moviepy.editor import *
+# from moviepy.editor import *
+from moviepy.editor import AudioFileClip, ImageClip, CompositeAudioClip, concatenate_videoclips
 from moviepy.config import change_settings
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from pathlib import Path
+from pydub import AudioSegment
+
 
 # --- Configuration ---
 ASSETS_PATH = Path("assets")
@@ -49,28 +52,27 @@ def get_pexels_image(query, video_type):
         print(f"❌ General error fetching Pexels image for query '{query}': {e}")
     return None
 
-from pydub import AudioSegment  # Add at the top with other imports
-
 def text_to_speech(text, output_path):
     """
     Converts text to speech using gTTS and ensures clean audio using WAV format.
-    This avoids YouTube issues with VBR MP3s.
+    This avoids YouTube issues with VBR MP3s and uses PCM encoding for ffmpeg compatibility.
     """
     print(f"🎤 Converting script to speech...")
     try:
         temp_mp3_path = str(output_path).replace('.mp3', '_temp.mp3')
         wav_path = str(output_path.with_suffix('.wav'))
 
-        # Generate initial MP3 using gTTS
+        # Generate MP3 using gTTS
         tts = gTTS(text=text, lang='en', slow=False)
         tts.save(temp_mp3_path)
 
-        # Convert to WAV using pydub
+        # Convert to PCM WAV using pydub
         audio = AudioSegment.from_mp3(temp_mp3_path)
-        audio.export(wav_path, format="wav")
-        os.remove(temp_mp3_path)  # Clean up
+        audio.export(wav_path, format="wav", codec="pcm_s16le")  # 👈 Most compatible format
+        os.remove(temp_mp3_path)
 
-        print("✅ Speech generated and converted to WAV successfully!")
+        print(f"✅ Speech generated and converted to WAV successfully!")
+        print(f"🎧 WAV audio duration: {audio.duration_seconds:.2f} seconds")
         return Path(wav_path)
 
     except Exception as e:
