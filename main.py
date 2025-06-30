@@ -1,10 +1,9 @@
-# FILE: main.py
-# FINAL, CORRECTED VERSION: Compatible with the latest generator.py
-
+import os
 import json
-from pathlib import Path
 import datetime
 import time
+import traceback
+from pathlib import Path
 from src.generator import (
     generate_curriculum,
     generate_lesson_content,
@@ -18,11 +17,10 @@ from src.uploader import upload_to_youtube
 # --- Configuration ---
 CONTENT_PLAN_FILE = Path("content_plan.json")
 OUTPUT_DIR = Path("output")
-# Set the number of lessons to produce per run. Defaulting to 1 for safety.
-LESSONS_PER_RUN = 1 
+LESSONS_PER_RUN = 1  # Produce only 1 lesson per run
+
 
 def get_content_plan():
-    """Reads the content plan, or generates a new one if it doesn't exist."""
     if not CONTENT_PLAN_FILE.exists():
         new_plan = generate_curriculum()
         with open(CONTENT_PLAN_FILE, 'w') as f:
@@ -33,111 +31,145 @@ def get_content_plan():
         with open(CONTENT_PLAN_FILE, 'r') as f:
             return json.load(f)
 
+
 def update_content_plan(plan):
-    """Saves the updated content plan back to the file."""
     with open(CONTENT_PLAN_FILE, 'w') as f:
         json.dump(plan, f, indent=2)
 
+
 def produce_lesson_videos(lesson):
-    """Orchestrates the full production pipeline for a single lesson."""
     print(f"\n▶️ Starting production for Lesson: '{lesson['title']}'")
     unique_id = f"{datetime.datetime.now().strftime('%Y%m%d')}_{lesson['chapter']}_{lesson['part']}"
-    
-    # --- Generate Base Content ---
+
+    # --- Generate Content ---
     lesson_content = generate_lesson_content(lesson['title'])
 
-    # --- Long-Form Video Production ---
+    # --- Long-Form ---
     print("\n--- Producing Long-Form Video ---")
     long_form_script = f"Hello and welcome to AI for Developers. I'm {YOUR_NAME}. In today's lesson, {lesson['title']}. "
     long_form_script += " ".join(s['content'] for s in lesson_content['long_form_slides'])
+
     long_form_audio_mp3_path = OUTPUT_DIR / f"long_audio_{unique_id}.mp3"
-    long_form_audio_path = text_to_speech(long_form_script, long_form_audio_mp3_path)  # Returns .wav path
+    long_form_audio_path = text_to_speech(long_form_script, long_form_audio_mp3_path)
+    print(f"🔊 Long-form audio path: {long_form_audio_path}, exists: {long_form_audio_path.exists()}")
 
     long_form_slides_dir = OUTPUT_DIR / f"slides_long_{unique_id}"
-    
-    print("🖼️ Generating professional slides for long-form video...")
+    print("🖼️ Generating professional slides...")
     long_form_slide_paths = []
     total_slides = len(lesson_content['long_form_slides'])
-    for i, slide_data in enumerate(lesson_content['long_form_slides']):
+    for i, slide in enumerate(lesson_content['long_form_slides']):
         slide_path = generate_visuals(
             output_dir=long_form_slides_dir,
             video_type='long',
-            slide_content=slide_data,
+            slide_content=slide,
             slide_number=i + 1,
             total_slides=total_slides
         )
         long_form_slide_paths.append(slide_path)
-    
-    long_form_video_path = OUTPUT_DIR / f"long_video_{unique_id}.mp4"
-    create_video(long_form_slide_paths, long_form_audio_path, long_form_video_path, 'long')
-    long_form_thumb_path = generate_visuals(output_dir=OUTPUT_DIR, video_type='long', thumbnail_title=lesson['title'])
 
-    # --- Promotional Short Video Production ---
-    print("\n--- Producing Promotional Short ---")
+    long_form_video_path = OUTPUT_DIR / f"long_video_{unique_id}.mp4"
+    print(f"🎥 Creating long-form video at: {long_form_video_path}")
+    create_video(long_form_slide_paths, long_form_audio_path, long_form_video_path, 'long')
+
+    long_form_thumb_path = generate_visuals(
+        output_dir=OUTPUT_DIR,
+        video_type='long',
+        thumbnail_title=lesson['title']
+    )
+
+    # --- Short Form ---
+    print("\n--- Producing Short Video ---")
     short_script = f"{lesson_content['short_form_highlight']} For the full lesson, check out our channel. Link in the description!"
     short_audio_mp3_path = OUTPUT_DIR / f"short_audio_{unique_id}.mp3"
-    short_audio_path = text_to_speech(short_script, short_audio_mp3_path)  # Returns .wav path
+    short_audio_path = text_to_speech(short_script, short_audio_mp3_path)
 
     short_slides_dir = OUTPUT_DIR / f"slides_short_{unique_id}"
-    short_slide_content = {"title": "Quick Tip!", "content": lesson_content['short_form_highlight']}
-    short_slide_paths = [generate_visuals(output_dir=short_slides_dir, video_type='short', slide_content=short_slide_content, slide_number=1, total_slides=1)]
-    
-    short_video_path = OUTPUT_DIR / f"short_video_{unique_id}.mp4"
-    create_video(short_slide_paths, short_audio_path, short_video_path, 'short')
-    short_thumb_path = generate_visuals(output_dir=OUTPUT_DIR, video_type='short', thumbnail_title=f"Quick Tip: {lesson['title']}")
+    short_slide_content = {
+        "title": "Quick Tip!",
+        "content": lesson_content['short_form_highlight']
+    }
+    short_slide_paths = [generate_visuals(
+        output_dir=short_slides_dir,
+        video_type='short',
+        slide_content=short_slide_content,
+        slide_number=1,
+        total_slides=1
+    )]
 
-    # --- Upload to YouTube ---
-    print("\n--- Uploading to YouTube ---")
+    short_video_path = OUTPUT_DIR / f"short_video_{unique_id}.mp4"
+    print(f"🎥 Creating short video at: {short_video_path}")
+    create_video(short_slide_paths, short_audio_path, short_video_path, 'short')
+    short_thumb_path = generate_visuals(
+        output_dir=OUTPUT_DIR,
+        video_type='short',
+        thumbnail_title=f"Quick Tip: {lesson['title']}"
+    )
+
+    # --- Upload ---
+    print("\n📤 Uploading to YouTube...")
     generated_hashtags = lesson_content.get("hashtags", "#AI #Developer #LearnAI")
-    long_form_tags = "AI, Artificial Intelligence, Developer, Programming, Tutorial, " + lesson['title'].replace(" ", ", ")
     long_form_desc = f"Part of the 'AI for Developers' series by {YOUR_NAME}.\n\nToday's Lesson: {lesson['title']}\n\n{generated_hashtags}"
-    
-    long_video_id = upload_to_youtube(long_form_video_path, lesson['title'], long_form_desc, long_form_tags, long_form_thumb_path)
-    
+    long_form_tags = "AI, Artificial Intelligence, Developer, Programming, Tutorial, " + lesson['title'].replace(" ", ", ")
+
+    long_video_id = upload_to_youtube(
+        long_form_video_path,
+        lesson['title'],
+        long_form_desc,
+        long_form_tags,
+        long_form_thumb_path
+    )
+
     if long_video_id:
-        print("Waiting for 30 seconds before uploading the short...")
+        print("⏳ Waiting 30 seconds before uploading the short...")
         time.sleep(30)
-        
-        highlight_text = lesson_content['short_form_highlight']
-        max_highlight_len = 100 - len(" #Shorts")
-        short_title = f"{highlight_text[:max_highlight_len]} #Shorts"
+        short_title = f"{lesson_content['short_form_highlight'][:95]} #Shorts"
         short_desc = f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n#AI #Programming #Tech"
-        upload_to_youtube(short_video_path, short_title, short_desc, "AI, Shorts, TechTip", short_thumb_path)
+        upload_to_youtube(
+            short_video_path,
+            short_title,
+            short_desc,
+            "AI, Shorts, TechTip",
+            short_thumb_path
+        )
         return long_video_id
     return None
 
+
 def main():
-    """Main function to run the autonomous video production pipeline."""
-    print("--- Starting Autonomous AI Course Generator ---")
-    
-    OUTPUT_DIR.mkdir(exist_ok=True)
-    plan = get_content_plan()
+    print("🚀 Starting Autonomous AI Course Generator")
+    print(f"📁 Current working dir: {os.getcwd()}")
+    print(f"📁 OUTPUT_DIR: {OUTPUT_DIR.resolve()}")
 
-    pending_lessons = [(i, lesson) for i, lesson in enumerate(plan['lessons']) if lesson['status'] == 'pending']
-    
-    if not pending_lessons:
-        print("🎉 Course complete! All lessons have been produced.")
-        return
+    try:
+        OUTPUT_DIR.mkdir(exist_ok=True)
+        print(f"📁 Created output folder: {OUTPUT_DIR.exists()}")
+        plan = get_content_plan()
+        pending_lessons = [(i, lesson) for i, lesson in enumerate(plan['lessons']) if lesson['status'] == 'pending']
 
-    lessons_to_produce = pending_lessons[:LESSONS_PER_RUN]
+        if not pending_lessons:
+            print("🎉 All lessons produced!")
+            return
 
-    for lesson_index, lesson in lessons_to_produce:
-        try:
-            video_id = produce_lesson_videos(lesson)
-            if video_id:
-                plan['lessons'][lesson_index]['status'] = 'complete'
-                plan['lessons'][lesson_index]['youtube_id'] = video_id
-                print(f"✅ --- Successfully marked lesson as complete: '{lesson['title']}' ---")
-            else:
-                print(f"⚠️ --- Upload failed for lesson '{lesson['title']}'. It will be retried on the next run. ---")
-        except Exception as e:
-            print(f"❌ A critical error occurred during production for lesson '{lesson['title']}': {e}")
-            print("This lesson will be retried on the next run.")
-        finally:
-            update_content_plan(plan)
-            if len(lessons_to_produce) > 1 and lesson != lessons_to_produce[-1][1]:
-                print("\nWaiting for 60 seconds before starting next lesson to respect API rate limits...")
-                time.sleep(60)
+        for lesson_index, lesson in pending_lessons[:LESSONS_PER_RUN]:
+            try:
+                video_id = produce_lesson_videos(lesson)
+                if video_id:
+                    plan['lessons'][lesson_index]['status'] = 'complete'
+                    plan['lessons'][lesson_index]['youtube_id'] = video_id
+                    print(f"✅ Completed lesson: {lesson['title']}")
+                else:
+                    print(f"⚠️ Upload failed: {lesson['title']}")
+            except Exception as e:
+                print(f"❌ Failed producing lesson: {lesson['title']}")
+                traceback.print_exc()
+            finally:
+                update_content_plan(plan)
+                print("📦 Content plan updated.")
+
+    except Exception as e:
+        print("❌ Critical error in main()")
+        traceback.print_exc()
+
 
 if __name__ == "__main__":
     main()

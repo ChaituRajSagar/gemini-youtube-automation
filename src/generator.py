@@ -236,7 +236,9 @@ def create_video(slide_paths, audio_path, output_path, video_type):
         video = concatenate_videoclips(image_clips, method="compose")
         
         # Set the final, combined audio track to the video
-        video.set_audio(final_audio)
+        # video.set_audio(final_audio)
+        print(f"🕒 Audio clip duration: {audio_clip.duration:.2f} seconds")
+        video = video.set_audio(final_audio)  # ✅ Required!
         
         # --- MODIFIED: Write the final video file with more compatible parameters ---
         video.write_videofile(
