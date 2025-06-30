@@ -48,7 +48,9 @@ def produce_lesson_videos(lesson):
     print("\n--- Producing Long-Form Video ---")
     long_form_script = f"Hello and welcome to AI for Developers. I'm {YOUR_NAME}. In today's lesson, {lesson['title']}. "
     long_form_script += " ".join(s['content'] for s in lesson_content['long_form_slides'])
-
+    long_form_script += (
+    "\n\nThanks for watching! If you found this helpful, make sure to subscribe to our channel, "
+    "hit the like button, and click the bell icon so you don't miss any future lessons on AI for Developers.")
     long_form_audio_mp3_path = OUTPUT_DIR / f"long_audio_{unique_id}.mp3"
     long_form_audio_path = text_to_speech(long_form_script, long_form_audio_mp3_path)
     print(f"🔊 Long-form audio path: {long_form_audio_path}, exists: {long_form_audio_path.exists()}")
