@@ -19,7 +19,7 @@ from src.uploader import upload_to_youtube
 CONTENT_PLAN_FILE = Path("content_plan.json")
 OUTPUT_DIR = Path("output")
 # Set the number of lessons to produce per run. Default to 1 for safety.
-LESSONS_PER_RUN = 1 
+LESSONS_PER_RUN = 2 
 
 def get_content_plan():
     """Reads the content plan, or generates a new one if it doesn't exist."""
