@@ -1,13 +1,15 @@
 # FILE: src/generator.py
-# The new, powerful generation engine for the AI course.
+# FINAL VERSION: Includes professional, "real PPT" style slide generation with Pexels backgrounds.
 
 import os
 import json
+import requests
+from io import BytesIO
 import google.generativeai as genai
 from gtts import gTTS
 from moviepy.editor import *
 from moviepy.config import change_settings
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from pathlib import Path
 
 # --- Configuration ---
@@ -21,13 +23,33 @@ YOUR_NAME = "Chaitanya Eswar Rajesh"
 if os.name == 'posix':
     change_settings({"IMAGEMAGICK_BINARY": "/usr/bin/convert"})
 
+# --- NEW: Helper function to get images from Pexels ---
+def get_pexels_image(query, video_type):
+    """Searches for a relevant image on Pexels and returns the image object."""
+    pexels_api_key = os.getenv("PEXELS_API_KEY")
+    if not pexels_api_key:
+        print("⚠️ PEXELS_API_KEY not found. Skipping background image search.")
+        return None
+    
+    orientation = 'landscape' if video_type == 'long' else 'portrait'
+    
+    try:
+        headers = {"Authorization": pexels_api_key}
+        params = {"query": query, "per_page": 1, "orientation": orientation}
+        response = requests.get("https://api.pexels.com/v1/search", headers=headers, params=params, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        if data['photos']:
+            image_url = data['photos'][0]['src']['large2x']
+            image_response = requests.get(image_url, timeout=10)
+            image_response.raise_for_status()
+            return Image.open(BytesIO(image_response.content)).convert("RGBA")
+    except Exception as e:
+        print(f"❌ Error fetching Pexels image for query '{query}': {e}")
+    return None
+
 def text_to_speech(text, output_path):
-    """
-    Converts text to speech.
-    NOTE: gTTS has a limited, non-selectable voice. For a consistent male voice,
-    replace this function with a call to a service like Google Cloud Text-to-Speech
-    or ElevenLabs, which require their own API keys and Python libraries.
-    """
+    """Converts text to speech."""
     print(f"🎤 Converting script to speech...")
     try:
         tts = gTTS(text=text, lang='en', slow=False)
@@ -47,7 +69,6 @@ def generate_curriculum():
     You are an expert AI educator. Generate a curriculum for a YouTube series called 'AI for Developers by {YOUR_NAME}'.
     The style must be 'Explain Like I'm 5', using simple analogies before bridging to technical concepts.
     The curriculum must take a developer from absolute scratch to advanced topics, including Generative AI, LLMs, Vector Databases, and Agentic AI.
-    
     Respond with ONLY a valid JSON object. The object must contain a key "lessons" which is a list of 20 lesson objects.
     Each lesson object must have these keys: "chapter", "part", "title", "status" (defaulted to "pending"), and "youtube_id" (defaulted to null).
     """
@@ -87,14 +108,16 @@ def generate_lesson_content(lesson_title):
         print(f"❌ ERROR: Failed to generate lesson content. {e}")
         raise
 
+# --- REWRITTEN: This is the new, advanced visual generation function ---
 def generate_visuals(slides_data, output_dir, video_type):
-    """Generates slide or thumbnail images from structured data."""
+    """Generates professional, PPT-style slides or a thumbnail."""
     output_dir.mkdir(exist_ok=True, parents=True)
     image_paths = []
     is_thumbnail = "thumbnail_title" in slides_data[0]
+    total_slides = len(slides_data)
 
     width, height = (1920, 1080) if video_type == 'long' else (1080, 1920)
-    
+
     try:
         title_font = ImageFont.truetype(str(FONT_FILE), 80 if video_type == 'long' else 90)
         content_font = ImageFont.truetype(str(FONT_FILE), 45 if video_type == 'long' else 55)
@@ -103,27 +126,40 @@ def generate_visuals(slides_data, output_dir, video_type):
         title_font = content_font = footer_font = FALLBACK_THUMBNAIL_FONT
 
     for i, data in enumerate(slides_data):
-        img = Image.new('RGB', (width, height), color=(12, 17, 29))
-        draw = ImageDraw.Draw(img)
-        
-        title = data.get("thumbnail_title") if is_thumbnail else data.get("title", "")
-        content = "" if is_thumbnail else data.get("content", "")
+        # --- 1. Get Background Image ---
+        query = data.get("thumbnail_title") or data.get("title")
+        bg_image = get_pexels_image(query, video_type)
+        if bg_image:
+            bg_image = bg_image.resize((width, height))
+        else: # Fallback to solid color
+            bg_image = Image.new('RGBA', (width, height), color=(12, 17, 29))
 
-        # Draw Title
+        # --- 2. Apply Effects for Readability ---
+        bg_image = bg_image.filter(ImageFilter.GaussianBlur(5))
+        darken_layer = Image.new('RGBA', bg_image.size, (0, 0, 0, 150))
+        final_bg = Image.alpha_composite(bg_image, darken_layer).convert("RGB")
+        draw = ImageDraw.Draw(final_bg)
+
+        # --- 3. Draw Header, Content, and Footer ---
+        title = data.get("thumbnail_title", data.get("title", ""))
+        
+        # Header
+        header_height = int(height * 0.18)
+        draw.rectangle([0, 0, width, header_height], fill=(25, 40, 65, 200))
         title_bbox = draw.textbbox((0, 0), title, font=title_font)
         title_x = (width - (title_bbox[2] - title_bbox[0])) / 2
-        title_y = height * 0.4 if is_thumbnail else height * 0.2
+        title_y = (header_height - (title_bbox[3] - title_bbox[1])) / 2
         draw.text((title_x, title_y), title, font=title_font, fill=(255, 255, 255))
-        
-        # Draw Content for slides
-        if content:
+
+        # Content (only for slides, not thumbnails)
+        if not is_thumbnail:
+            content = data.get("content", "")
             words = content.split()
             lines = []
             current_line = ""
             for word in words:
                 test_line = f"{current_line} {word}".strip()
-                bbox = draw.textbbox((0,0), test_line, font=content_font)
-                if (bbox[2] - bbox[0]) < width * 0.8:
+                if draw.textbbox((0,0), test_line, font=content_font)[2] < width * 0.8:
                     current_line = test_line
                 else:
                     lines.append(current_line)
@@ -131,24 +167,27 @@ def generate_visuals(slides_data, output_dir, video_type):
             lines.append(current_line)
 
             line_height = content_font.getbbox("A")[3] + 15
-            total_text_height = len(lines) * line_height
-            y_text = (height - total_text_height) / 2 + (height * 0.15) # Start lower than title
-            
+            y_text = header_height + 80
             for line in lines:
                 line_bbox = draw.textbbox((0, 0), line, font=content_font)
                 line_x = (width - (line_bbox[2] - line_bbox[0])) / 2
-                draw.text((line_x, y_text), line, font=content_font, fill=(220, 220, 220))
+                draw.text((line_x, y_text), line, font=content_font, fill=(230, 230, 230))
                 y_text += line_height
+        
+        # Footer
+        footer_height = int(height * 0.06)
+        draw.rectangle([0, height - footer_height, width, height], fill=(25, 40, 65, 200))
+        brand_text = f"AI for Developers by {YOUR_NAME}"
+        draw.text((40, height - footer_height + 12), brand_text, font=footer_font, fill=(180, 180, 180))
+        if not is_thumbnail:
+            slide_num_text = f"Slide {i + 1} of {total_slides}"
+            slide_num_bbox = draw.textbbox((0, 0), slide_num_text, font=footer_font)
+            draw.text((width - slide_num_bbox[2] - 40, height - footer_height + 12), slide_num_text, font=footer_font, fill=(180, 180, 180))
 
-        # Draw Footer
-        footer_text = f"AI for Developers by {YOUR_NAME}"
-        footer_bbox = draw.textbbox((0, 0), footer_text, font=footer_font)
-        footer_x = (width - (footer_bbox[2] - footer_bbox[0])) / 2
-        draw.text((footer_x, height * 0.9), footer_text, font=footer_font, fill=(150, 150, 150))
-
+        # --- 4. Save Image ---
         file_prefix = "thumb" if is_thumbnail else f"slide_{i+1:02d}"
         path = output_dir / f"{file_prefix}.png"
-        img.save(path)
+        final_bg.save(path)
         image_paths.append(str(path))
     
     return image_paths[0] if is_thumbnail else image_paths

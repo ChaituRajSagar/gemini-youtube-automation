@@ -8,7 +8,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:      # <-- ADD THIS BLOCK
+    permissions:
       contents: write
 
     steps:
@@ -48,6 +48,7 @@ jobs:
       - name: 🚀 Run Autonomous Production Pipeline
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }} # <-- This line is added
         run: python main.py
 
       - name: 💾 Commit and push content plan changes
