@@ -80,7 +80,8 @@ def generate_curriculum():
         model = genai.GenerativeModel('gemini-1.5-flash')
         prompt = f"""
         You are an expert AI educator. Generate a curriculum for a YouTube series called 'AI for Developers by {YOUR_NAME}'.
-        The style must be 'Explain Like I'm 5', using simple analogies before bridging to technical concepts.
+        The style must be: 'Assume the viewer is a beginner or non-technical person starting their journey into AI as a developer.
+        Use simple real-world analogies, relatable examples, and then connect to technical concepts.'
         The curriculum must take a developer from absolute scratch to advanced topics, including Generative AI, LLMs, Vector Databases, and Agentic AI.
         Respond with ONLY a valid JSON object. The object must contain a key "lessons" which is a list of 20 lesson objects.
         Each lesson object must have these keys: "chapter", "part", "title", "status" (defaulted to "pending"), and "youtube_id" (defaulted to null).
@@ -102,12 +103,13 @@ def generate_lesson_content(lesson_title):
         model = genai.GenerativeModel('gemini-1.5-flash')
         prompt = f"""
         You are creating a lesson for the 'AI for Developers by {YOUR_NAME}' series. The topic is '{lesson_title}'.
-        The style is 'Explain Like I'm 5', using simple real-world analogies.
+        The style is: Assume the viewer is a beginner developer or non-tech person who wants to learn AI from scratch.
+        Use analogies and clear, simple language. Each concept must be explained from a developer's perspective, assuming no prior AI or ML knowledge.
 
         Generate a JSON response with three keys:
         1. "long_form_slides": A list of 7 to 8 slide objects for a longer, more detailed main video. Each object needs a "title" and "content" key.
-        2. "short_form_highlight": A single, punchy, 1-2 sentence highlight for a YouTube Short.
-        3. "hashtags": A string of 5-7 relevant, space-separated hashtags for this lesson (e.g., "#GenerativeAI #LLM #Developer").
+        2. "short_form_highlight": A single, punchy, 1-2 sentence summary for a YouTube Short.
+        3. "hashtags": A string of 5-7 relevant, space-separated hashtags for this lesson (e.g., "#GenerativeAI #LLM #Developer","#NeuralNetworks #BeginnerAI #AIforDevelopers").
 
         Return only valid JSON.
         """
@@ -203,41 +205,95 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
     return str(path)
 
 
-def create_video(slide_paths, audio_path, output_path, video_type):
-    """Creates a final video from slides and audio with robust audio mixing."""
+# def create_video(slide_paths, audio_path, output_path, video_type):
+#     """Creates a final video from slides and audio with robust audio mixing."""
+#     print(f"🎬 Creating {video_type} video...")
+#     try:
+#         if not slide_paths:
+#             raise ValueError("Cannot create video with no slides.")
+
+#         audio_clip = AudioFileClip(str(audio_path))
+#         final_audio = audio_clip
+
+#         if BACKGROUND_MUSIC_PATH.exists():
+#             print("🎵 Adding background music...")
+#             music_clip = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.15)
+            
+#             if music_clip.duration > audio_clip.duration:
+#                 music_clip = music_clip.subclip(0, audio_clip.duration)
+#             else:
+#                 music_clip = music_clip.fx(vfx.loop, duration=audio_clip.duration)
+            
+#             final_audio = CompositeAudioClip([audio_clip.volumex(1.2), music_clip])
+        
+#         slide_duration = (audio_clip.duration / len(slide_paths)) * 1.15
+
+#         image_clips = []
+#         for i, path in enumerate(slide_paths):
+#             duration = slide_duration + 2 if i == len(slide_paths) - 1 else slide_duration
+#             image_clips.append(ImageClip(path).set_duration(duration).fadein(0.5).fadeout(0.5))
+
+#         video = concatenate_videoclips(image_clips, method="compose")
+#         video = video.set_audio(final_audio)
+        
+#         video.write_videofile(
+#             str(output_path), 
+#             fps=24, 
+#             codec="libx264", 
+#             audio_codec="aac",
+#             audio_bitrate="192k",
+#             preset="medium",
+#             threads=4
+#         )
+#         print(f"✅ {video_type.capitalize()} video created successfully!")
+
+#     except Exception as e:
+#         print(f"❌ ERROR during video creation: {e}")
+#         raise
+
+def create_video(slide_paths, audio_paths, output_path, video_type):
+    """Creates a final video from slides and per-slide audio clips with optional background music."""
     print(f"🎬 Creating {video_type} video...")
     try:
-        if not slide_paths:
-            raise ValueError("Cannot create video with no slides.")
-
-        audio_clip = AudioFileClip(str(audio_path))
-        final_audio = audio_clip
-
-        if BACKGROUND_MUSIC_PATH.exists():
-            print("🎵 Adding background music...")
-            music_clip = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.15)
-            
-            if music_clip.duration > audio_clip.duration:
-                music_clip = music_clip.subclip(0, audio_clip.duration)
-            else:
-                music_clip = music_clip.fx(vfx.loop, duration=audio_clip.duration)
-            
-            final_audio = CompositeAudioClip([audio_clip.volumex(1.2), music_clip])
-        
-        slide_duration = (audio_clip.duration / len(slide_paths)) * 1.15
+        if not slide_paths or not audio_paths or len(slide_paths) != len(audio_paths):
+            raise ValueError("Mismatch between slides and audio clips, or no slides provided.")
 
         image_clips = []
-        for i, path in enumerate(slide_paths):
-            duration = slide_duration + 2 if i == len(slide_paths) - 1 else slide_duration
-            image_clips.append(ImageClip(path).set_duration(duration).fadein(0.5).fadeout(0.5))
+        for i, (img_path, audio_path) in enumerate(zip(slide_paths, audio_paths)):
+            audio_clip = AudioFileClip(str(audio_path))
+            duration = audio_clip.duration + 0.5  # Slight padding
+            img_clip = (
+                ImageClip(img_path)
+                .set_duration(duration)
+                .set_audio(audio_clip)
+                .fadein(0.5)
+                .fadeout(0.5)
+            )
+            image_clips.append(img_clip)
 
-        video = concatenate_videoclips(image_clips, method="compose")
-        video = video.set_audio(final_audio)
-        
-        video.write_videofile(
-            str(output_path), 
-            fps=24, 
-            codec="libx264", 
+        final_video = concatenate_videoclips(image_clips, method="compose")
+
+        # OPTIONAL: Add background music if exists
+        if BACKGROUND_MUSIC_PATH.exists():
+            print("🎵 Adding background music...")
+            bg_music = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.15)
+
+            if bg_music.duration < final_video.duration:
+                bg_music = bg_music.fx(vfx.loop, duration=final_video.duration)
+            else:
+                bg_music = bg_music.subclip(0, final_video.duration)
+
+            composite_audio = CompositeAudioClip([
+                final_video.audio.volumex(1.2),
+                bg_music
+            ])
+            final_video = final_video.set_audio(composite_audio)
+
+        # EXPORT VIDEO
+        final_video.write_videofile(
+            str(output_path),
+            fps=24,
+            codec="libx264",
             audio_codec="aac",
             audio_bitrate="192k",
             preset="medium",
