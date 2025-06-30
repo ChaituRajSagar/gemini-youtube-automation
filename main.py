@@ -168,7 +168,7 @@ def main():
                 video_id = produce_lesson_videos(lesson)
                 if video_id:
                     for original_lesson in plan['lessons']:
-                        if original_lesson['title'] == lesson['title']:
+                        if original_lesson['title'].strip().lower() == lesson['title'].strip().lower():
                             original_lesson['status'] = 'complete'
                             original_lesson['youtube_id'] = video_id
                             print(f"✅ Completed lesson: {lesson['title']}")
@@ -182,8 +182,8 @@ def main():
                 traceback.print_exc()
             finally:
                 update_content_plan(plan)
-                print("📦 Content plan updated.")
-
+                # print("📦 Content plan updated.")
+                print(f"✅ Updated content plan for lesson: {lesson['title']}")
     except Exception as e:
         print("❌ Critical error in main()")
         traceback.print_exc()
