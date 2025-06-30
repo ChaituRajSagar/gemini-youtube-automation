@@ -125,8 +125,8 @@ def produce_lesson_videos(lesson):
         # short_title = f"{lesson_content['short_form_highlight'][:95]} #Shorts"
         highlight = (lesson_content.get('short_form_highlight') or '').strip()
         if not highlight:
-            highlight = f"AI Quick Tip: {lesson['title']}"  # fallback title if blank
-        short_title = f"{highlight[:95]} #Shorts"
+            highlight = f"AI Quick Tip: {lesson['title']}"
+        short_title = f"{highlight[:90].rstrip()} #Shorts"  # limit to 90 chars max
         short_desc = f"Watch the full lesson with {YOUR_NAME} here: https://www.youtube.com/watch?v={long_video_id}\n\n#AI #Programming #Tech"
         upload_to_youtube(
             short_video_path,
