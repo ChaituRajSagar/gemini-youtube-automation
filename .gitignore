@@ -18,6 +18,7 @@ credentials.json
 .env
 encoded_client_secret.txt
 encoded_credentials.txt
+prompt.txt
 
 # VS Code
 .vscode/
