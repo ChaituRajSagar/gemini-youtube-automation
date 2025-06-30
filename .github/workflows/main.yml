@@ -1,4 +1,4 @@
-name: Generate and Upload Daily AI Video
+name: Autonomous AI Course Generator
 
 on:
   schedule:
