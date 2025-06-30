@@ -142,7 +142,6 @@ def produce_lesson_videos(lesson):
         return long_video_id
     return None
 
-
 def main():
     print("🚀 Starting Autonomous AI Course Generator")
     print(f"📁 Current working dir: {os.getcwd()}")
@@ -167,9 +166,14 @@ def main():
             try:
                 video_id = produce_lesson_videos(lesson)
                 if video_id:
-                    plan['lessons'][lesson_index]['status'] = 'complete'
-                    plan['lessons'][lesson_index]['youtube_id'] = video_id
-                    print(f"✅ Completed lesson: {lesson['title']}")
+                    for original_lesson in plan['lessons']:
+                        if original_lesson['title'] == lesson['title']:
+                            original_lesson['status'] = 'complete'
+                            original_lesson['youtube_id'] = video_id
+                            print(f"✅ Completed lesson: {lesson['title']}")
+                            break
+                    else:
+                        print(f"⚠️ Could not find lesson in plan to mark as complete: {lesson['title']}")
                 else:
                     print(f"⚠️ Upload failed: {lesson['title']}")
             except Exception as e:
@@ -189,7 +193,3 @@ def main():
             print(f"🧹 Deleted: {file}")
     except Exception as e:
         print(f"⚠️ Could not clean up .wav files: {e}")
-
-
-if __name__ == "__main__":
-    main()
