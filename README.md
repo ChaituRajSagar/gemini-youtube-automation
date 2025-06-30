@@ -1,6 +1,10 @@
 # Gemini YouTube Automation
 
-This project automates the process of generating content and uploading videos to YouTube. It is structured to facilitate easy management of the source code and workflows.
+The project includes a GitHub Actions workflow that runs daily at 8:00 AM UTC. It:
+- Generates lesson scripts using Gemini.
+- Produces long-form and short YouTube videos.
+- Uploads them automatically with appropriate thumbnails and metadata.
+
 
 ## Project Structure
 ```text
