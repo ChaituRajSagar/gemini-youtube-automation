@@ -46,12 +46,24 @@ jobs:
         shell: bash
 
       - name: 🚀 Run Autonomous Production Pipeline
+        id: production-run # Give the step an ID to check its outcome
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }} # <-- This line is added
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: python main.py
 
+      # --- NEW STEP ADDED FOR DEBUGGING ---
+      - name: 🔎 Upload Audio Artifact for Debugging
+        # This will run even if the python script fails, so we can check the audio files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audio-debug-files
+          path: output/*.mp3
+
       - name: 💾 Commit and push content plan changes
+        # Only run this step if the python script was successful
+        if: steps.production-run.outcome == 'success'
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
