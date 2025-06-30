@@ -1,5 +1,5 @@
 # FILE: src/generator.py
-# FINAL, CORRECTED VERSION: Implements all features for the autonomous course generator.
+# FINAL, DEFINITIVE VERSION: Integrates all features including longer videos, dynamic hashtags, PPT-style slides, and robust audio.
 
 import os
 import json
@@ -97,7 +97,7 @@ def generate_lesson_content(lesson_title):
         The style is 'Explain Like I'm 5', using simple real-world analogies.
 
         Generate a JSON response with three keys:
-        1. "long_form_slides": A list of 7-10 slide objects for the main video. Each object needs a "title" and "content" key.
+        1. "long_form_slides": A list of 7 to 8 slide objects for a longer, more detailed main video. Each object needs a "title" and "content" key.
         2. "short_form_highlight": A single, punchy, 1-2 sentence highlight for a YouTube Short.
         3. "hashtags": A string of 5-7 relevant, space-separated hashtags for this lesson (e.g., "#GenerativeAI #LLM #Developer").
 
@@ -136,6 +136,7 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
     except IOError:
         title_font = content_font = footer_font = FALLBACK_THUMBNAIL_FONT
 
+    # Draw Title: Centered for thumbnails, in a header for slides
     if not is_thumbnail:
         header_height = int(height * 0.18)
         draw.rectangle([0, 0, width, header_height], fill=(25, 40, 65, 200))
@@ -149,6 +150,7 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
         title_y = (height - (title_bbox[3] - title_bbox[1])) / 2
         draw.text((title_x, title_y), title, font=title_font, fill=(255, 255, 255), stroke_width=2, stroke_fill="black")
 
+    # Draw Content and Footer (only for slides)
     if not is_thumbnail:
         content = slide_content.get("content", "")
         words = content.split()
