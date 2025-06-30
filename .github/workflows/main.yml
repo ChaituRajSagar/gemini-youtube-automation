@@ -2,12 +2,14 @@ name: Autonomous AI Course Generator
 
 on:
   schedule:
-    - cron: '0 6 * * *' # 6:00 AM UTC (11:30 AM IST) daily
+    - cron: '0 8 * * *' # 8:00 AM UTC daily
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: ⬇️ Checkout repository
@@ -23,31 +25,19 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y imagemagick ffmpeg
-
-          echo "--- [DEBUG] Searching for ImageMagick policy.xml file... ---"
           POLICY_FILE=$(find /etc -name "policy.xml" 2>/dev/null | grep -i "ImageMagick" | head -n 1)
-
           if [ -z "$POLICY_FILE" ]; then
-            echo "❌ CRITICAL: Could not find ImageMagick's policy.xml file! Cannot proceed."
+            echo "❌ CRITICAL: Could not find ImageMagick's policy.xml file!"
             exit 1
           fi
-          echo "✅ [DEBUG] Found policy file at: $POLICY_FILE"
-
-          echo "--- Patching ImageMagick policy.xml ---"
-          sudo sed -i 's/rights="none" pattern="PS"/rights="read|write" pattern="PS"/' "$POLICY_FILE"
-          sudo sed -i 's/rights="none" pattern="PDF"/rights="read|write" pattern="PDF"/' "$POLICY_FILE"
-          sudo sed -i 's/rights="none" pattern="XPS"/rights="read|write" pattern="XPS"/' "$POLICY_FILE"
-          sudo sed -i 's/<policy domain="path" rights="none" pattern="@\*"/<!-- & -->/' "$POLICY_FILE"
+          echo "✅ Found policy file at: $POLICY_FILE, applying patches..."
           sudo sed -i 's/<policy domain="resource" name="width" value=".*"\/>/<policy domain="resource" name="width" value="16384"\/>/' "$POLICY_FILE"
           sudo sed -i 's/<policy domain="resource" name="height" value=".*"\/>/<policy domain="resource" name="height" value="16384"\/>/' "$POLICY_FILE"
-          sudo sed -i 's/<policy domain="resource" name="memory" value=".*"\/>/<policy domain="resource" name="memory" value="2GiB"\/>/' "$POLICY_FILE"
-          sudo sed -i 's/<policy domain="resource" name="disk" value=".*"\/>/<policy domain="resource" name="disk" value="4GiB"\/>/' "$POLICY_FILE"
-          echo "✅ Policy file patched successfully."
 
           echo "--- Installing Python packages ---"
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          echo "✅ Python packages installed."
+          echo "✅ Dependencies installed."
 
       - name: 🔑 Restore API credentials from base64
         run: |
@@ -55,8 +45,32 @@ jobs:
           echo "${{ secrets.CREDENTIALS_B64 }}" | base64 -d > credentials.json
         shell: bash
 
-      - name: 🚀 Run full automation pipeline
+      - name: 🚀 Run Autonomous Production Pipeline
+        id: production-run
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: python main.py
+
+      - name: 🔎 Upload Audio Artifact for Debugging
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: audio-debug-files
+          path: output/*.wav
+
+      - name: 🎥 Upload Final Video for Debugging
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-videos
+          path: output/*.mp4
+
+      - name: 💾 Commit and push content plan changes
+        if: steps.production-run.outcome == 'success'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add content_plan.json
+          git commit -m "feat: Update content plan after daily video production" || echo "No changes to commit"
+          git push

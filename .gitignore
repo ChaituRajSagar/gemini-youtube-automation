@@ -25,3 +25,6 @@ prompt.txt
 
 #html
 *.html
+
+# Ignore all JSON key files
+gemini-youtube-automator-4ff94a2f3c8a.json

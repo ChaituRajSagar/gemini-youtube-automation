@@ -8,8 +8,11 @@ google-auth-oauthlib
 gTTS
 moviepy==1.0.3
 
-# For Pexels API (used for fetching background videos)
+# For Pexels API
 requests
 
-# For image processing (e.g., thumbnails)
+# For image processing (e.g., slides, thumbnails)
 Pillow==9.5.0
+
+# ✅ For MP3 to WAV conversion
+pydub
