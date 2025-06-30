@@ -52,14 +52,12 @@ jobs:
           PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
         run: python main.py
 
-      # --- NEW STEP ADDED FOR DEBUGGING ---
       - name: 🔎 Upload Audio Artifact for Debugging
-        # This will run even if the python script fails, so we can check the audio files
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: audio-debug-files
-          path: output/*.mp3
+          path: output/*.wav
 
       - name: 💾 Commit and push content plan changes
         # Only run this step if the python script was successful
