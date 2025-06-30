@@ -17,7 +17,7 @@ ASSETS_PATH = Path("assets")
 FONT_FILE = ASSETS_PATH / "fonts/arial.ttf"
 BACKGROUND_MUSIC_PATH = ASSETS_PATH / "music/bg_music.mp3"
 FALLBACK_THUMBNAIL_FONT = ImageFont.load_default()
-YOUR_NAME = "Chaitanya Eswar Rajesh"
+YOUR_NAME = "Chaitanya"
 
 # Configure moviepy for GitHub Actions
 if os.name == 'posix':
@@ -49,17 +49,30 @@ def get_pexels_image(query, video_type):
         print(f"❌ General error fetching Pexels image for query '{query}': {e}")
     return None
 
+from pydub import AudioSegment  # Add at the top with other imports
+
 def text_to_speech(text, output_path):
     """
-    Converts text to speech.
-    NOTE: gTTS has a limited voice. For a consistent male voice, replace this
-    with a call to a service like Google Cloud Text-to-Speech or ElevenLabs.
+    Converts text to speech using gTTS and ensures clean audio using WAV format.
+    This avoids YouTube issues with VBR MP3s.
     """
     print(f"🎤 Converting script to speech...")
     try:
+        temp_mp3_path = str(output_path).replace('.mp3', '_temp.mp3')
+        wav_path = str(output_path.with_suffix('.wav'))
+
+        # Generate initial MP3 using gTTS
         tts = gTTS(text=text, lang='en', slow=False)
-        tts.save(str(output_path))
-        print("✅ Speech generated successfully!")
+        tts.save(temp_mp3_path)
+
+        # Convert to WAV using pydub
+        audio = AudioSegment.from_mp3(temp_mp3_path)
+        audio.export(wav_path, format="wav")
+        os.remove(temp_mp3_path)  # Clean up
+
+        print("✅ Speech generated and converted to WAV successfully!")
+        return Path(wav_path)
+
     except Exception as e:
         print(f"❌ ERROR: Failed to generate speech: {e}")
         raise
@@ -233,6 +246,13 @@ def create_video(slide_paths, audio_path, output_path, video_type):
             preset="medium"          # A good balance of encoding speed and file size
         )
         print(f"✅ {video_type.capitalize()} video created successfully!")
+
+        # ✅ Clean up audio file after rendering
+        try:
+            os.remove(audio_path)
+            print(f"🧹 Cleaned up audio file: {audio_path}")
+        except Exception as e:
+            print(f"⚠️ Could not delete temporary audio file: {e}")
 
     except Exception as e:
         print(f"❌ ERROR during video creation: {e}")

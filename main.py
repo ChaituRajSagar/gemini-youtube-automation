@@ -50,9 +50,9 @@ def produce_lesson_videos(lesson):
     print("\n--- Producing Long-Form Video ---")
     long_form_script = f"Hello and welcome to AI for Developers. I'm {YOUR_NAME}. In today's lesson, {lesson['title']}. "
     long_form_script += " ".join(s['content'] for s in lesson_content['long_form_slides'])
-    long_form_audio_path = OUTPUT_DIR / f"long_audio_{unique_id}.mp3"
-    text_to_speech(long_form_script, long_form_audio_path)
-    
+    long_form_audio_mp3_path = OUTPUT_DIR / f"long_audio_{unique_id}.mp3"
+    long_form_audio_path = text_to_speech(long_form_script, long_form_audio_mp3_path)  # Returns .wav path
+
     long_form_slides_dir = OUTPUT_DIR / f"slides_long_{unique_id}"
     
     print("🖼️ Generating professional slides for long-form video...")
@@ -75,8 +75,8 @@ def produce_lesson_videos(lesson):
     # --- Promotional Short Video Production ---
     print("\n--- Producing Promotional Short ---")
     short_script = f"{lesson_content['short_form_highlight']} For the full lesson, check out our channel. Link in the description!"
-    short_audio_path = OUTPUT_DIR / f"short_audio_{unique_id}.mp3"
-    text_to_speech(short_script, short_audio_path)
+    short_audio_mp3_path = OUTPUT_DIR / f"short_audio_{unique_id}.mp3"
+    short_audio_path = text_to_speech(short_script, short_audio_mp3_path)  # Returns .wav path
 
     short_slides_dir = OUTPUT_DIR / f"slides_short_{unique_id}"
     short_slide_content = {"title": "Quick Tip!", "content": lesson_content['short_form_highlight']}
