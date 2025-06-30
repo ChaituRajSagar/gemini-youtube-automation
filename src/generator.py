@@ -17,7 +17,7 @@ ASSETS_PATH = Path("assets")
 FONT_FILE = ASSETS_PATH / "fonts/arial.ttf"
 BACKGROUND_MUSIC_PATH = ASSETS_PATH / "music/bg_music.mp3"
 FALLBACK_THUMBNAIL_FONT = ImageFont.load_default()
-YOUR_NAME = "Chaitanya Eswar Rajesh"
+YOUR_NAME = "Chaitanya"
 
 # Configure moviepy for GitHub Actions
 if os.name == 'posix':
