@@ -142,6 +142,7 @@ def produce_lesson_videos(lesson):
         return long_video_id
     return None
 
+
 def main():
     print("🚀 Starting Autonomous AI Course Generator")
     print(f"📁 Current working dir: {os.getcwd()}")
@@ -193,4 +194,6 @@ def main():
             print(f"🧹 Deleted: {file}")
     except Exception as e:
         print(f"⚠️ Could not clean up .wav files: {e}")
-    print("✅ Finished processing all lessons.")
+
+if __name__ == "__main__":
+    main()
