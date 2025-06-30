@@ -169,6 +169,14 @@ def main():
     except Exception as e:
         print("❌ Critical error in main()")
         traceback.print_exc()
+        
+    # ✅ CLEANUP: Remove leftover .wav files after everything finishes
+    try:
+        for file in OUTPUT_DIR.glob("*.wav"):
+            file.unlink()
+            print(f"🧹 Deleted: {file}")
+    except Exception as e:
+        print(f"⚠️ Could not clean up .wav files: {e}")
 
 
 if __name__ == "__main__":
