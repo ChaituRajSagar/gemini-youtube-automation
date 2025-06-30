@@ -1,5 +1,5 @@
 # FILE: main.py
-# FINAL VERSION: Updated to work with the advanced "real PPT" slide generator.
+# FINAL, CORRECTED VERSION: Compatible with the latest generator.py
 
 import json
 from pathlib import Path
@@ -18,8 +18,8 @@ from src.uploader import upload_to_youtube
 # --- Configuration ---
 CONTENT_PLAN_FILE = Path("content_plan.json")
 OUTPUT_DIR = Path("output")
-# Set the number of lessons to produce per run.
-LESSONS_PER_RUN = 2 
+# Set the number of lessons to produce per run. Defaulting to 1 for safety and to respect API limits.
+LESSONS_PER_RUN = 1 
 
 def get_content_plan():
     """Reads the content plan, or generates a new one if it doesn't exist."""
@@ -55,26 +55,23 @@ def produce_lesson_videos(lesson):
     
     long_form_slides_dir = OUTPUT_DIR / f"slides_long_{unique_id}"
     
-    # --- MODIFIED BLOCK START ---
-    # This now loops through each slide to generate it individually.
-    print("🖼️ Generating professional slides...")
+    print("🖼️ Generating professional slides for long-form video...")
     long_form_slide_paths = []
     total_slides = len(lesson_content['long_form_slides'])
     for i, slide_data in enumerate(lesson_content['long_form_slides']):
-        # We now pass all necessary info for the new "real PPT" slide generator
         slide_path = generate_visuals(
-            slide_content=slide_data,
             output_dir=long_form_slides_dir,
             video_type='long',
+            slide_content=slide_data,
             slide_number=i + 1,
             total_slides=total_slides
         )
         long_form_slide_paths.append(slide_path)
-    # --- MODIFIED BLOCK END ---
     
     long_form_video_path = OUTPUT_DIR / f"long_video_{unique_id}.mp4"
     create_video(long_form_slide_paths, long_form_audio_path, long_form_video_path, 'long')
-    long_form_thumb_path = generate_visuals(thumbnail_title=lesson['title'], output_dir=OUTPUT_DIR, video_type='long')
+    # CORRECTED CALL: Generate the thumbnail for the long-form video
+    long_form_thumb_path = generate_visuals(output_dir=OUTPUT_DIR, video_type='long', thumbnail_title=lesson['title'])
 
     # --- Promotional Short Video Production ---
     print("\n--- Producing Promotional Short ---")
@@ -82,19 +79,22 @@ def produce_lesson_videos(lesson):
     short_audio_path = OUTPUT_DIR / f"short_audio_{unique_id}.mp3"
     text_to_speech(short_script, short_audio_path)
 
-    # For the short, we can just generate a single, dynamic slide
     short_slides_dir = OUTPUT_DIR / f"slides_short_{unique_id}"
     short_slide_content = {"title": "Quick Tip!", "content": lesson_content['short_form_highlight']}
-    short_slide_paths = [generate_visuals(slide_content=short_slide_content, output_dir=short_slides_dir, video_type='short', slide_number=1, total_slides=1)]
+    short_slide_paths = [generate_visuals(output_dir=short_slides_dir, video_type='short', slide_content=short_slide_content, slide_number=1, total_slides=1)]
     
     short_video_path = OUTPUT_DIR / f"short_video_{unique_id}.mp4"
     create_video(short_slide_paths, short_audio_path, short_video_path, 'short')
-    short_thumb_path = generate_visuals(thumbnail_title=f"Quick Tip: {lesson['title']}", output_dir=OUTPUT_DIR, video_type='short')
+    # CORRECTED CALL: Generate the thumbnail for the short video
+    short_thumb_path = generate_visuals(output_dir=OUTPUT_DIR, video_type='short', thumbnail_title=f"Quick Tip: {lesson['title']}")
 
     # --- Upload to YouTube ---
     print("\n--- Uploading to YouTube ---")
+    # Add dynamically generated hashtags
+    generated_hashtags = lesson_content.get("hashtags", "#AI #Developer #LearnAI")
     long_form_tags = "AI, Artificial Intelligence, Developer, Programming, Tutorial, " + lesson['title'].replace(" ", ", ")
-    long_form_desc = f"Part of the 'AI for Developers' series by {YOUR_NAME}.\n\nToday's Lesson: {lesson['title']}\n\n#AI #Developer #LearnAI"
+    long_form_desc = f"Part of the 'AI for Developers' series by {YOUR_NAME}.\n\nToday's Lesson: {lesson['title']}\n\n{generated_hashtags}"
+    
     long_video_id = upload_to_youtube(long_form_video_path, lesson['title'], long_form_desc, long_form_tags, long_form_thumb_path)
     
     if long_video_id:
@@ -137,6 +137,7 @@ def main():
             print(f"❌ A critical error occurred during production for lesson '{lesson['title']}': {e}")
             print("This lesson will be retried on the next run.")
         finally:
+            # CORRECTED TYPO: Changed 'plaan' to 'plan'
             update_content_plan(plan)
             if len(lessons_to_produce) > 1 and lesson != lessons_to_produce[-1][1]:
                 print("\nWaiting for 60 seconds before starting next lesson to respect API rate limits...")

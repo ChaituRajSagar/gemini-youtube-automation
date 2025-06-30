@@ -34,7 +34,7 @@ def get_pexels_image(query, video_type):
     
     try:
         headers = {"Authorization": pexels_api_key}
-        params = {"query": query, "per_page": 1, "orientation": orientation}
+        params = {"query": f"abstract {query}", "per_page": 1, "orientation": orientation}
         response = requests.get("https://api.pexels.com/v1/search", headers=headers, params=params, timeout=15)
         response.raise_for_status()
         data = response.json()
@@ -96,9 +96,10 @@ def generate_lesson_content(lesson_title):
         You are creating a lesson for the 'AI for Developers by {YOUR_NAME}' series. The topic is '{lesson_title}'.
         The style is 'Explain Like I'm 5', using simple real-world analogies.
 
-        Generate a JSON response with two keys:
-        1. "long_form_slides": A list of 5 slide objects for the main video. Each object needs a "title" and "content" key, explaining the topic in sequence.
-        2. "short_form_highlight": A single, punchy, 1-2 sentence highlight of the most exciting part of the lesson for a YouTube Short.
+        Generate a JSON response with three keys:
+        1. "long_form_slides": A list of 5 slide objects for the main video. Each object needs a "title" and "content" key.
+        2. "short_form_highlight": A single, punchy, 1-2 sentence highlight for a YouTube Short.
+        3. "hashtags": A string of 5-7 relevant, space-separated hashtags for this lesson (e.g., "#GenerativeAI #LLM #Developer").
 
         Return only valid JSON.
         """
@@ -135,7 +136,7 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
     except IOError:
         title_font = content_font = footer_font = FALLBACK_THUMBNAIL_FONT
 
-    # Draw Header (for slides) or Center Title (for thumbnails)
+    # Draw Title: Centered for thumbnails, in a header for slides
     if not is_thumbnail:
         header_height = int(height * 0.18)
         draw.rectangle([0, 0, width, header_height], fill=(25, 40, 65, 200))
@@ -185,50 +186,32 @@ def generate_visuals(output_dir, video_type, slide_content=None, thumbnail_title
     final_bg.save(path)
     return str(path)
 
-# def create_video(slide_paths, audio_path, output_path, video_type):
-#     """Creates a final video, synchronized with audio."""
-#     print(f"🎬 Creating {video_type} video...")
-#     try:
-#         audio_clip = AudioFileClip(str(audio_path))
-#         final_audio = audio_clip
-
-#         if BACKGROUND_MUSIC_PATH.exists():
-#             music_clip = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.1)
-#             final_audio = CompositeAudioClip([audio_clip.volumex(1.2), music_clip.set_duration(audio_clip.duration)])
-        
-#         slide_duration = audio_clip.duration / len(slide_paths)
-#         image_clips = [ImageClip(path).set_duration(slide_duration).fadein(0.5).fadeout(0.5) for path in slide_paths]
-        
-#         video = concatenate_videoclips(image_clips, method="compose")
-#         video = video.set_audio(final_audio)
-        
-#         video.write_videofile(str(output_path), fps=24, codec="libx264", audio_codec="aac")
-#         print(f"✅ {video_type.capitalize()} video created successfully!")
-#     except Exception as e:
-#         print(f"❌ ERROR during video creation: {e}")
-#         raise
-
 def create_video(slide_paths, audio_path, output_path, video_type):
-    """Creates a final video, synchronized with audio."""
+    """Creates a final video from slides and audio with robust audio mixing."""
     print(f"🎬 Creating {video_type} video...")
     try:
-        audio_clip = AudioFileClip(str(audio_path))
-        # Default to just the voiceover. This ensures sound even if music fails.
-        final_audio = audio_clip 
+        if not slide_paths:
+            raise ValueError("Cannot create video with no slides.")
 
-        # Safely add background music if the file exists
+        audio_clip = AudioFileClip(str(audio_path))
+        final_audio = audio_clip
+
         if BACKGROUND_MUSIC_PATH.exists():
-            music_clip = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.1)
-            final_audio = CompositeAudioClip([audio_clip.volumex(1.2), music_clip.set_duration(audio_clip.duration)])
+            print("🎵 Adding background music...")
+            music_clip = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.15)
+            if music_clip.duration > audio_clip.duration:
+                music_clip = music_clip.subclip(0, audio_clip.duration)
+            else:
+                music_clip = music_clip.fx(vfx.loop, duration=audio_clip.duration)
+            
+            final_audio = CompositeAudioClip([audio_clip.volumex(1.2), music_clip])
         
         slide_duration = audio_clip.duration / len(slide_paths)
-        
-        # Create video from image slides with fade transitions
         image_clips = [ImageClip(path).set_duration(slide_duration).fadein(0.5).fadeout(0.5) for path in slide_paths]
-        video = concatenate_videoclips(image_clips, method="compose")
-        video = video.set_audio(final_audio)
         
-        # Write the final video file
+        video = concatenate_videoclips(image_clips, method="compose")
+        video.set_audio(final_audio)
+        
         video.write_videofile(str(output_path), fps=24, codec="libx264", audio_codec="aac")
         print(f"✅ {video_type.capitalize()} video created successfully!")
 
