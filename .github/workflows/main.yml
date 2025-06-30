@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:      # <-- ADD THIS BLOCK
+      contents: write
 
     steps:
       - name: ⬇️ Checkout repository
