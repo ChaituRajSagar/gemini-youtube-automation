@@ -193,3 +193,4 @@ def main():
             print(f"🧹 Deleted: {file}")
     except Exception as e:
         print(f"⚠️ Could not clean up .wav files: {e}")
+    print("✅ Finished processing all lessons.")
