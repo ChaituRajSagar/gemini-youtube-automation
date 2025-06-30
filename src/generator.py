@@ -81,9 +81,13 @@ def generate_curriculum():
         model = genai.GenerativeModel('gemini-1.5-flash')
         prompt = f"""
         You are an expert AI educator. Generate a curriculum for a YouTube series called 'AI for Developers by {YOUR_NAME}'.
+
         The style must be: 'Assume the viewer is a beginner or non-technical person starting their journey into AI as a developer.
         Use simple real-world analogies, relatable examples, and then connect to technical concepts.'
-        The curriculum must take a developer from absolute scratch to advanced topics, including Generative AI, LLMs, Vector Databases, and Agentic AI.
+
+        The curriculum must take a developer from absolute scratch through all the foundations like Generative AI, LLMs, Vector Databases, and Agentic AI...
+        ...then continue into deep AI topics like Reinforcement Learning, Transformers internals, multi-agent systems, tool use, LangGraph, AI architecture, and more.
+
         Respond with ONLY a valid JSON object. The object must contain a key "lessons" which is a list of 20 lesson objects.
         Each lesson object must have these keys: "chapter", "part", "title", "status" (defaulted to "pending"), and "youtube_id" (defaulted to null).
         """
