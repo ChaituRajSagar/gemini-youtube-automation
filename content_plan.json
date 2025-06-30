@@ -1,0 +1,144 @@
+{
+  "lessons": [
+    {
+      "chapter": 1,
+      "part": 1,
+      "title": "What is AI?  (It's like a super-smart puppy!)",
+      "status": "complete",
+      "youtube_id": "KeZA63Q_5BY"
+    },
+    {
+      "chapter": 1,
+      "part": 2,
+      "title": "Teaching AI: Machine Learning Basics (Training your puppy with treats!)",
+      "status": "complete",
+      "youtube_id": "z11j1FNpAaE"
+    },
+    {
+      "chapter": 1,
+      "part": 3,
+      "title": "Data is King! (Puppy's favorite toys - the data AI learns from)",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 2,
+      "part": 1,
+      "title": "Supervised Learning: Teaching with examples (Showing your puppy what's a 'good boy'!)",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 2,
+      "part": 2,
+      "title": "Unsupervised Learning: Puppy plays and figures things out itself!",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 2,
+      "part": 3,
+      "title": "Reinforcement Learning: Rewards and punishments (Treats for good behavior!)",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 3,
+      "part": 1,
+      "title": "Building your first AI model (Coding a simple puppy predictor!)",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 3,
+      "part": 2,
+      "title": "Python for AI: The best treats for your AI puppy!",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 3,
+      "part": 3,
+      "title": "Libraries and Frameworks: Your puppy's favorite toys (NumPy, Pandas, Scikit-learn)",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 4,
+      "part": 1,
+      "title": "Neural Networks: Your puppy's brain (a simplified explanation)",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 4,
+      "part": 2,
+      "title": "Deep Learning: A really smart puppy!",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 5,
+      "part": 1,
+      "title": "Generative AI:  Creating new things (Puppy painting!)",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 5,
+      "part": 2,
+      "title": "Large Language Models (LLMs): Puppy understands human language!",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 6,
+      "part": 1,
+      "title": "Working with LLMs:  Talking to your AI puppy!",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 6,
+      "part": 2,
+      "title": "Prompt Engineering:  Talking to your puppy clearly!",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 7,
+      "part": 1,
+      "title": "Vector Databases: Organizing your puppy's toys (efficiently!)",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 7,
+      "part": 2,
+      "title": "Semantic Search: Finding the right toy for your puppy!",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 8,
+      "part": 1,
+      "title": "Agentic AI: Your puppy learns to make decisions (on its own!)",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 8,
+      "part": 2,
+      "title": "Building an AI Agent:  Giving your puppy tasks!",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 9,
+      "part": 1,
+      "title": "The Future of AI (Where will your super-smart puppy go next?)",
+      "status": "pending",
+      "youtube_id": null
+    }
+  ]
+}
