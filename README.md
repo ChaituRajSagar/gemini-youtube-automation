@@ -1,6 +1,6 @@
 # Gemini YouTube Automation
 
-The project includes a GitHub Actions workflow that runs daily at 8:00 AM UTC. It:
+The project includes a GitHub Actions workflow that runs daily at 7:00 AM UTC. It:
 - Generates lesson scripts using Gemini.
 - Produces long-form and short YouTube videos.
 - Uploads them automatically with appropriate thumbnails and metadata.
