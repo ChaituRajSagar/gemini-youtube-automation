@@ -17,6 +17,7 @@ gemini-youtube-automation/
 │   ├── generator.py         # Code for generating content and video
 │   └── uploader.py          # Code for uploading to YouTube
 ├── .gitignore               # Files and directories to ignore in version control
+├── content_plan.json        # Contains topics for moving forward.
 ├── main.py                  # Main entry point to run the application
 └── requirements.txt         # List of Python packages needed
 ```
