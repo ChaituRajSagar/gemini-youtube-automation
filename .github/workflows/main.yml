@@ -2,7 +2,7 @@ name: Autonomous AI Course Generator
 
 on:
   schedule:
-    - cron: '0 8 * * *' # 8:00 AM UTC daily
+    - cron: '0 7 * * *' # 12:30 PM IST daily
   workflow_dispatch:
 
 jobs:
