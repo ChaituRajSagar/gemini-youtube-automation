@@ -11,133 +11,133 @@
       "chapter": 1,
       "part": 2,
       "title": "AI vs. Machine Learning vs. Deep Learning: Unpacking the Jargon",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "VePE72PjgoU"
     },
     {
       "chapter": 2,
       "part": 1,
       "title": "Generative AI: Creating things with AI (like writing poems and drawing pictures)",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "o7x6MUsH9Ak"
     },
     {
       "chapter": 2,
       "part": 2,
       "title": "Introduction to Large Language Models (LLMs):  Chatbots and beyond",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "jzbSPMl3ZYQ"
     },
     {
       "chapter": 2,
       "part": 3,
       "title": "Hands-on: Building a simple chatbot with a pre-trained LLM",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "Z0m3szlvtgc"
     },
     {
       "chapter": 3,
       "part": 1,
       "title": "Vector Databases: Organizing information like a library for AI",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "dTsf80jw27Y"
     },
     {
       "chapter": 3,
       "part": 2,
       "title": "Building a search engine using LLMs and vector databases",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "DzYpOqCLiew"
     },
     {
       "chapter": 4,
       "part": 1,
       "title": "Agentic AI:  Giving AI the ability to plan and act (like a smart assistant)",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "mRuBB8YyiI"
     },
     {
       "chapter": 4,
       "part": 2,
       "title": "Building a simple agent with Python",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "0vP6llchuUU"
     },
     {
       "chapter": 5,
       "part": 1,
       "title": "Reinforcement Learning: Teaching AI through rewards and punishments (like training a dog)",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": ""
     },
     {
       "chapter": 5,
       "part": 2,
       "title": "A simple Reinforcement Learning project:  Training an AI to play a game",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id":"3q_R5sKjYio"
     },
     {
       "chapter": 6,
       "part": 1,
       "title": "Transformers: Under the hood of LLMs (the engine that makes it work)",
-      "status": "pending",
+      "status": "complete",
       "youtube_id": null
     },
     {
       "chapter": 6,
       "part": 2,
       "title": "Attention mechanisms explained simply",
-      "status": "pending",
+      "status": "complete",
       "youtube_id": null
     },
     {
       "chapter": 7,
       "part": 1,
       "title": "Multi-Agent Systems:  Teams of AIs working together (like a soccer team)",
-      "status": "pending",
+      "status": "complete",
       "youtube_id": null
     },
     {
       "chapter": 7,
       "part": 2,
       "title": "Building a simple multi-agent system simulation",
-      "status": "pending",
+      "status": "complete",
       "youtube_id": null
     },
     {
       "chapter": 8,
       "part": 1,
       "title": "Tool Use for AI: Giving AI access to external tools (like a calculator or search engine)",
-      "status": "pending",
+      "status": "complete",
       "youtube_id": null
     },
     {
       "chapter": 8,
       "part": 2,
       "title": "LangChain introduction and practical applications",
-      "status": "pending",
+      "status": "complete",
       "youtube_id": null
     },
     {
       "chapter": 9,
       "part": 1,
       "title": "LangGraph: Connecting LLMs to knowledge graphs (enhancing reasoning)",
-      "status": "pending",
+      "status": "complete",
       "youtube_id": null
     },
     {
       "chapter": 10,
       "part": 1,
       "title": "AI Architecture: Designing robust and scalable AI systems",
-      "status": "pending",
+      "status": "complete",
       "youtube_id": null
     },
     {
       "chapter": 10,
       "part": 2,
       "title": "Deploying your AI models: From prototype to production",
-      "status": "pending",
+      "status": "complete",
       "youtube_id": null
     }
   ]
