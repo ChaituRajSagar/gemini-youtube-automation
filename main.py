@@ -60,7 +60,7 @@ def produce_lesson_videos(lesson):
     all_slides = [intro_slide] + lesson_content['long_form_slides'] + [outro_slide]
 
     slide_scripts = [
-        f"Hello and welcome to AI for Developers. I'm {YOUR_NAME}. Today’s lesson is titled {lesson['title']}.",
+        f"Hello and welcome to AI for Developers. I'm {YOUR_NAME} talking bot. Today’s lesson is titled {lesson['title']}.",
         *[s['content'] for s in lesson_content['long_form_slides']],
         "Thanks for watching! If you found this helpful, make sure to subscribe to our channel and hit the like button."
     ]
