@@ -73,15 +73,22 @@ def text_to_speech(text, output_path):
         raise
 
 
-def generate_curriculum():
+def generate_curriculum(previous_titles=None):
     """Generates the entire course curriculum using Gemini."""
     print("🤖 No content plan found. Generating a new curriculum from scratch...")
     try:
         genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
         model = genai.GenerativeModel('gemini-1.5-flash')
+
+        #Optional: Add prior lesson titles for continuation
+        history = ""
+        if previous_titles:
+            formatted = "\n".join([f"{i+1}. {t}" for i, t in enumerate(previous_titles)])
+            history = f"The following lessons have already been created:\n{formatted}\n\nPlease continue from where this series left off.\n"
+
         prompt = f"""
         You are an expert AI educator. Generate a curriculum for a YouTube series called 'AI for Developers by {YOUR_NAME}'.
-
+        {history}
         The style must be: 'Assume the viewer is a beginner or non-technical person starting their journey into AI as a developer.
         Use simple real-world analogies, relatable examples, and then connect to technical concepts.'
 

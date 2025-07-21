@@ -172,8 +172,9 @@ def main():
 
         if not pending:
             print("🎉 All lessons produced! Generating new content plan to restart from scratch...")
-            # new_plan = generate_curriculum(regenerate=True)
-            new_plan = generate_curriculum()
+
+            previous_titles = [lesson['title'] for lesson in plan['lessons']]
+            new_plan = generate_curriculum(previous_titles=previous_titles)  # 🔁 Pass prior titles
             update_content_plan(new_plan)
             plan = new_plan
             pending = [(i, lesson) for i, lesson in enumerate(new_plan['lessons']) if lesson['status'] == 'pending']
