@@ -18,127 +18,127 @@
       "chapter": 2,
       "part": 1,
       "title": "Your First AI Program: Predicting House Prices with Linear Regression (Python)",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "-1F9x1F9OZ0"
     },
     {
       "chapter": 2,
       "part": 2,
       "title": "Data Wrangling: Cleaning and Preparing Data for Your AI Models",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "dfM1WzbvYr8"
     },
     {
       "chapter": 3,
       "part": 1,
       "title": "Classification Algorithms: Identifying Cats vs. Dogs with Logistic Regression",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "3q_R5sKjYio"
     },
     {
       "chapter": 3,
       "part": 2,
       "title": "Model Evaluation Metrics: Understanding Accuracy, Precision, and Recall",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "immT33tYCLU"
     },
     {
       "chapter": 4,
       "part": 1,
       "title": "Introduction to Neural Networks: The Building Blocks of Deep Learning (Simple Analogy)",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "Z3xrwjze-Co"
     },
     {
       "chapter": 4,
       "part": 2,
       "title": "Building a Simple Neural Network with TensorFlow/Keras for Image Classification",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "xpQ07Cl9jFg"
     },
     {
       "chapter": 5,
       "part": 1,
       "title": "Convolutional Neural Networks (CNNs): Image Recognition and Object Detection",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "JHdsY3jh2ks"
     },
     {
       "chapter": 5,
       "part": 2,
       "title": "Recurrent Neural Networks (RNNs): Understanding Sequential Data like Text and Time Series",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "1gKvFeh_vhU"
     },
     {
       "chapter": 6,
       "part": 1,
       "title": "Introduction to Generative AI: Creating New Content with AI",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "o7x6MUsH9Ak"
     },
     {
       "chapter": 6,
       "part": 2,
       "title": "Generative Adversarial Networks (GANs):  The Art of AI Deception (and Creation)",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "K6pIlrqgYSs"
     },
     {
       "chapter": 7,
       "part": 1,
       "title": "Large Language Models (LLMs):  How They Work and Their Capabilities",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "jzbSPMl3ZYQ"
     },
     {
       "chapter": 7,
       "part": 2,
       "title": "Working with LLMs: APIs and Practical Applications",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "Z0m3szlvtgc"
     },
     {
       "chapter": 8,
       "part": 1,
       "title": "Vector Databases: Storing and Retrieving Information Efficiently",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "w0eUqEo_EZ8"
     },
     {
       "chapter": 8,
       "part": 2,
       "title": "Building a Semantic Search Engine with LLMs and Vector Databases",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "DzYpOqCLiew"
     },
     {
       "chapter": 9,
       "part": 1,
       "title": "Introduction to Agentic AI:  AI that Acts Autonomously",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "-mRuBB8YyiI"
     },
     {
       "chapter": 9,
       "part": 2,
       "title": "Building a Simple Agent with LangChain: Combining LLMs and External Tools",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "0vP6llchuUU"
     },
     {
       "chapter": 10,
       "part": 1,
       "title": "Deployment and Scaling AI Models: Getting Your AI to the Real World",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "4R2HXhTs1oo"
     },
     {
       "chapter": 10,
       "part": 2,
       "title": "Ethical Considerations in AI Development: Responsible AI Practices",
-      "status": "pending",
-      "youtube_id": null
+      "status": "complete",
+      "youtube_id": "vIaKm3TP64U"
     }
   ]
 }
