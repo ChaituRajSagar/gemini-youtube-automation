@@ -1,144 +1,144 @@
 {
   "lessons": [
     {
-      "chapter": "Generative AI Deep Dive",
-      "part": 1,
-      "title": "Understanding Vector Databases:  Storing and Retrieving AI Information",
+      "chapter": 1,
+      "part": 21,
+      "title": "Deploying Your AI Models: From Code to Cloud",
       "status": "complete",
-      "youtube_id": "xIerKplqkXE"
+      "youtube_id": "EvBmrh8EvFA"
     },
     {
-      "chapter": "Generative AI Deep Dive",
-      "part": 2,
-      "title": "Building a Simple Generative Image System:  From Concept to Code",
-      "status": "complete",
-      "youtube_id": "4pqxmLCMi9w"
+      "chapter": 1,
+      "part": 22,
+      "title": "Monitoring and Maintaining AI Systems: Keeping Your AI Healthy",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Generative AI Deep Dive",
-      "part": 3,
-      "title": "Advanced Generative Techniques:  Style Transfer and Image Inpainting",
-      "status": "complete",
-      "youtube_id": "G4OraC54M1g"
+      "chapter": 2,
+      "part": 23,
+      "title": "Fine-tuning LLMs: Tailoring Language Models to Your Needs",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Agentic AI",
-      "part": 1,
-      "title": "Introduction to Agentic AI:  Giving AI the Power to Act",
-      "status": "complete",
-      "youtube_id": "ujrarTAr634"
+      "chapter": 2,
+      "part": 24,
+      "title": "Prompt Engineering for LLMs: Getting the Best Responses",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Agentic AI",
-      "part": 2,
-      "title": "Building a Simple AI Agent:  Automating Tasks with Python",
-      "status": "complete",
-      "youtube_id": "kSopNi06rRs"
+      "chapter": 3,
+      "part": 25,
+      "title": "Advanced Vector Database Techniques: Similarity Search and Indexing",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Agentic AI",
-      "part": 3,
-      "title": "Advanced Agent Design:  Planning, Memory, and Learning",
-      "status": "complete",
-      "youtube_id": "q9v7MQeecv4"
+      "chapter": 3,
+      "part": 26,
+      "title": "Building a Hybrid Search System: Combining LLMs and Vector Databases",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Reinforcement Learning Advanced",
-      "part": 1,
-      "title": "Deep Dive into Transformers: Understanding the Architecture",
-      "status": "complete",
-      "youtube_id": "Rn9RVXL3aag"
+      "chapter": 4,
+      "part": 27,
+      "title": "Deep Reinforcement Learning: Mastering Complex Environments",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Reinforcement Learning Advanced",
-      "part": 2,
-      "title": "Building a Complex Reinforcement Learning Agent with Multi-Agent Systems",
-      "status": "complete",
-      "youtube_id": "Krf2CXL3i_s"
+      "chapter": 4,
+      "part": 28,
+      "title": "Imitation Learning: Teaching AI through Demonstration",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Reinforcement Learning Advanced",
-      "part": 3,
-      "title": "Training Agents with Tool Use: Integrating External APIs",
-      "status": "complete",
-      "youtube_id": "NRbv7-TokKY"
+      "chapter": 5,
+      "part": 29,
+      "title": "Building Multi-Agent Systems for Collaboration and Competition",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "LangChain & Large Language Models",
-      "part": 1,
-      "title": "Introduction to LangChain: Connecting LLMs to the Real World",
-      "status": "complete",
-      "youtube_id": "TUOcnddP1jA"
+      "chapter": 5,
+      "part": 30,
+      "title": "Decentralized AI: Building Autonomous Agent Networks",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "LangChain & Large Language Models",
-      "part": 2,
-      "title": "Building Applications with LangChain:  Chatbots and More",
-      "status": "complete",
-      "youtube_id": "MwNGxzV8GYA"
+      "chapter": 6,
+      "part": 31,
+      "title": "Advanced LangChain Techniques: Building Complex AI Applications",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Knowledge Graphs and Reasoning",
-      "part": 1,
-      "title": "Introduction to Knowledge Graphs: Representing Information as Networks",
-      "status": "complete",
-      "youtube_id": "SMwUZSt1EC4"
+      "chapter": 6,
+      "part": 32,
+      "title": "Integrating LLMs with Other AI Models: A Hybrid Approach",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Knowledge Graphs and Reasoning",
-      "part": 2,
-      "title": "Building and Querying Knowledge Graphs with Neo4j",
-      "status": "complete",
-      "youtube_id": "q6vAOzfpxD4"
+      "chapter": 7,
+      "part": 33,
+      "title": "Advanced Knowledge Graph Techniques: Reasoning and Inference",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "AI Architecture and Design",
-      "part": 1,
-      "title": "Designing Robust and Scalable AI Systems",
-      "status": "complete",
-      "youtube_id": "VBxpMiIukyc"
+      "chapter": 7,
+      "part": 34,
+      "title": "Knowledge Graph Embeddings: Representing Knowledge as Vectors",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "AI Architecture and Design",
-      "part": 2,
-      "title": "Microservices for AI:  Building Modular AI Applications",
-      "status": "complete",
-      "youtube_id": "mYOH9Z8ypP8"
+      "chapter": 8,
+      "part": 35,
+      "title": "Building Real-time AI Systems: Handling Streaming Data",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Advanced AI Techniques",
-      "part": 1,
-      "title": "Introduction to LangGraph: Combining Language and Graph Models",
-      "status": "complete",
-      "youtube_id": "WvHYRLEgNBw"
+      "chapter": 8,
+      "part": 36,
+      "title": "AI for Edge Devices: Deploying AI on Resource-Constrained Hardware",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Advanced AI Techniques",
-      "part": 2,
-      "title": "Causal Inference with AI: Understanding Cause and Effect",
-      "status": "complete",
-      "youtube_id": "MsLmlkP3jxA"
+      "chapter": 9,
+      "part": 37,
+      "title": "Advanced LangGraph Techniques: Combining LLMs and Knowledge Graphs",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Advanced AI Techniques",
-      "part": 3,
-      "title": "Bayesian Networks and Probabilistic Reasoning",
-      "status": "complete",
-      "youtube_id": "AxG0q6vO1gY"
+      "chapter": 9,
+      "part": 38,
+      "title": "Building Question Answering Systems with LangGraph",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "Advanced AI Techniques",
-      "part": 4,
-      "title": "Explainable AI (XAI) Advanced Techniques:  Improving Model Transparency",
-      "status": "complete",
-      "youtube_id": "FUzbYXDATpU"
+      "chapter": 10,
+      "part": 39,
+      "title": "Bias Detection and Mitigation in AI Systems",
+      "status": "pending",
+      "youtube_id": null
     },
     {
-      "chapter": "The Future of AI",
-      "part": 2,
-      "title": "AI Safety and Alignment:  Building Responsible AI Systems",
-      "status": "complete",
-      "youtube_id": "acDpnxq8IkI"
+      "chapter": 10,
+      "part": 40,
+      "title": "The Future of AI: Emerging Trends and Technologies",
+      "status": "pending",
+      "youtube_id": null
     }
   ]
 }
