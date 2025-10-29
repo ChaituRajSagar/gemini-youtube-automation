@@ -2,141 +2,141 @@
   "lessons": [
     {
       "chapter": 1,
-      "part": 21,
-      "title": "Prompt Engineering:  Getting the most out of your LLMs (talking to AI effectively)",
+      "part": 1,
+      "title": "Understanding AI:  From Magic to Math",
       "status": "complete",
-      "youtube_id": "mw9yb9JTeZc"
+      "youtube_id": "EN-Q73PXuYk"
     },
     {
       "chapter": 1,
-      "part": 22,
-      "title": "Fine-tuning LLMs:  Teaching your AI new tricks (personalizing your chatbot)",
-      "status": "pending",
-      "youtube_id": null
+      "part": 2,
+      "title": "Introduction to Machine Learning:  Teaching Computers to Learn",
+      "status": "complete",
+      "youtube_id": "mSk-7yGYZ1A"
     },
     {
       "chapter": 2,
-      "part": 23,
-      "title": "Understanding Bias in AI: Identifying and mitigating unfairness (AI ethics)",
-      "status": "pending",
-      "youtube_id": null
+      "part": 1,
+      "title": "Neural Networks: The Brain-Inspired Algorithm",
+      "status": "complete",
+      "youtube_id": "sSCUZqTu6og"
     },
     {
       "chapter": 2,
-      "part": 24,
-      "title": "Explainable AI (XAI):  Making AI decisions understandable (opening the black box)",
-      "status": "pending",
-      "youtube_id": null
+      "part": 2,
+      "title": "Deep Learning Fundamentals: Stacking Neural Networks for Power",
+      "status": "complete",
+      "youtube_id": "NrNbqgY8OQY"
     },
     {
       "chapter": 3,
-      "part": 25,
-      "title": "Computer Vision Fundamentals:  Teaching AI to 'see' (image recognition)",
-      "status": "pending",
-      "youtube_id": null
+      "part": 1,
+      "title": "Generative AI: Creating New Content with AI",
+      "status": "complete",
+      "youtube_id": "QGPgcd_F8h8"
     },
     {
       "chapter": 3,
-      "part": 26,
-      "title": "Building a simple image classifier with TensorFlow/PyTorch",
-      "status": "pending",
-      "youtube_id": null
-    },
-    {
-      "chapter": 3,
-      "part": 27,
-      "title": "Natural Language Processing (NLP) advanced techniques: Sentiment analysis and text summarization",
-      "status": "pending",
-      "youtube_id": null
+      "part": 2,
+      "title": "Understanding Transformers: The Architecture Behind LLMs",
+      "status": "complete",
+      "youtube_id": "aS5Eh9xYBMg"
     },
     {
       "chapter": 4,
-      "part": 28,
-      "title": "Time Series Analysis with AI: Forecasting the future (predicting stock prices)",
-      "status": "pending",
-      "youtube_id": null
+      "part": 1,
+      "title": "Building Your First AI Model: A Practical Example",
+      "status": "complete",
+      "youtube_id": "UEihVy583vU"
     },
     {
       "chapter": 4,
-      "part": 29,
-      "title": "Anomaly Detection: Identifying unusual patterns (fraud detection)",
+      "part": 2,
+      "title": "Model Training and Evaluation: Getting the Best Performance",
       "status": "pending",
       "youtube_id": null
     },
     {
       "chapter": 5,
-      "part": 30,
-      "title": "AI Security: Protecting your AI systems from attacks (keeping your AI safe)",
+      "part": 1,
+      "title": "Working with Datasets: Data Cleaning and Preprocessing",
       "status": "pending",
       "youtube_id": null
     },
     {
       "chapter": 5,
-      "part": 31,
-      "title": "MLOps:  Deploying and managing AI models in production (keeping your AI running)",
-      "status": "pending",
-      "youtube_id": null
-    },
-    {
-      "chapter": 5,
-      "part": 32,
-      "title": "Cloud Computing for AI: Leveraging cloud resources (scaling your AI)",
+      "part": 2,
+      "title": "Feature Engineering: Enhancing Your Model's Capabilities",
       "status": "pending",
       "youtube_id": null
     },
     {
       "chapter": 6,
-      "part": 33,
-      "title": "Graph Neural Networks (GNNs):  Working with interconnected data (social networks)",
+      "part": 1,
+      "title": "Agent-Based AI: Building Autonomous Systems",
       "status": "pending",
       "youtube_id": null
     },
     {
       "chapter": 6,
-      "part": 34,
-      "title": "Generative Adversarial Networks (GANs): Creating realistic images and videos (AI art)",
+      "part": 2,
+      "title": "Reinforcement Learning in Practice: Training Agents to Solve Problems",
       "status": "pending",
       "youtube_id": null
     },
     {
       "chapter": 7,
-      "part": 35,
-      "title": "Diffusion Models:  Another way to generate amazing images (AI art)",
+      "part": 1,
+      "title": "Advanced Multi-Agent Systems: Cooperation and Competition",
       "status": "pending",
       "youtube_id": null
     },
     {
       "chapter": 7,
-      "part": 36,
-      "title": "Federated Learning:  Training AI models on decentralized data (privacy-preserving AI)",
+      "part": 2,
+      "title": "Decentralized AI: Building Robust and Scalable Systems",
       "status": "pending",
       "youtube_id": null
     },
     {
       "chapter": 8,
-      "part": 37,
-      "title": "Advanced Reinforcement Learning: Deep Q-Networks and Policy Gradients",
+      "part": 1,
+      "title": "AI Tool Use: Empowering Your Agents with External Tools",
       "status": "pending",
       "youtube_id": null
     },
     {
       "chapter": 8,
-      "part": 38,
-      "title": "Building a more complex reinforcement learning agent (robot control)",
+      "part": 2,
+      "title": "LangChain Deep Dive: Advanced Techniques and Applications",
       "status": "pending",
       "youtube_id": null
     },
     {
-      "chapter": 8,
-      "part": 39,
-      "title": "AI Ethics and Societal Impact: Responsible AI development",
+      "chapter": 9,
+      "part": 1,
+      "title": "Understanding AI Architectures: Designing Efficient Systems",
       "status": "pending",
       "youtube_id": null
     },
     {
-      "chapter": 8,
-      "part": 40,
-      "title": "The Future of AI: Trends and Predictions",
+      "chapter": 9,
+      "part": 2,
+      "title": "MLOps: Deploying and Managing AI Models in Production",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 10,
+      "part": 1,
+      "title": "Ethical Considerations in AI: Bias, Fairness, and Responsibility",
+      "status": "pending",
+      "youtube_id": null
+    },
+    {
+      "chapter": 10,
+      "part": 2,
+      "title": "The Future of AI Development: Trends and Opportunities",
       "status": "pending",
       "youtube_id": null
     }
