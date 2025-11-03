@@ -79,7 +79,7 @@ def generate_curriculum(previous_titles=None):
     try:
         genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
         # model = genai.GenerativeModel('gemini-1.5-flash')
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash')
 
         #Optional: Add prior lesson titles for continuation
         history = ""
@@ -115,7 +115,7 @@ def generate_lesson_content(lesson_title):
     try:
         genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
         # model = genai.GenerativeModel('gemini-1.5-flash')
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         prompt = f"""
         You are creating a lesson for the 'AI for Developers by {YOUR_NAME}' series. The topic is '{lesson_title}'.
         The style is: Assume the viewer is a beginner developer or non-tech person who wants to learn AI from scratch.
