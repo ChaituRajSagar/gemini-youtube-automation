@@ -25,16 +25,19 @@ gemini-youtube-automation/
 ## Setup Instructions
 
 1. **Clone the repository:**
+```
 git clone https://github.com/ChaituRajSagar/gemini-youtube-automation.git
+```
+```
 cd gemini-youtube-automation
+```
 
-
-2. **Install dependencies:**
+3. **Install dependencies:**
 Make sure you have Python installed, then run:
 pip install -r requirements.txt
 
 
-3. **Configure YouTube API:**
+4. **Configure YouTube API:**
 Follow the [YouTube API documentation](https://developers.google.com/youtube/v3) to set up your API credentials and update the necessary configurations in `uploader.py`.
 
 ## Usage
