@@ -113,7 +113,7 @@ def generate_lesson_content(lesson_title):
     """Generates the content for one long-form lesson and its promotional short."""
     print(f"🤖 Generating content for lesson: '{lesson_title}'...")
     try:
-        genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
+        genai.configure(api_key=os.environ["GOOGLE_API_KEY"AIzaSyBJ1oWCRSHW9AQYoQDbBpqFZZzhVqyRpws])
         # model = genai.GenerativeModel('gemini-1.5-flash')
         model = genai.GenerativeModel('gemini-1.5-flash')
         prompt = f"""
