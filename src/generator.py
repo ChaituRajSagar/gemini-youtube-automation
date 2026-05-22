@@ -345,7 +345,7 @@ def create_video(slide_paths, audio_paths, output_path, video_type):
 
         if BACKGROUND_MUSIC_PATH.exists():
             print("🎵 Adding background music...")
-            bg_music = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.15)
+            bg_music = AudioFileClip(str(BACKGROUND_MUSIC_PATH)).volumex(0.05)
             if bg_music.duration < final_video.duration:
                 bg_music = bg_music.fx(vfx.loop, duration=final_video.duration)
             else:
