@@ -5,7 +5,7 @@ import os
 import json
 import requests
 from io import BytesIO
-import google.generativeai as genai
+from google import genai
 from gtts import gTTS
 from moviepy.editor import AudioFileClip, ImageClip, CompositeAudioClip, concatenate_videoclips, vfx
 from moviepy.config import change_settings
@@ -77,9 +77,7 @@ def generate_curriculum(previous_titles=None):
     """Generates the entire course curriculum using Gemini."""
     print("🤖 No content plan found. Generating a new curriculum from scratch...")
     try:
-        genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-        # model = genai.GenerativeModel('gemini-1.5-flash')
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
 
         #Optional: Add prior lesson titles for continuation
         history = ""
@@ -99,7 +97,7 @@ def generate_curriculum(previous_titles=None):
         Respond with ONLY a valid JSON object. The object must contain a key "lessons" which is a list of 20 lesson objects.
         Each lesson object must have these keys: "chapter", "part", "title", "status" (defaulted to "pending"), and "youtube_id" (defaulted to null).
         """
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt)
         json_string = response.text.strip().replace("```json", "").replace("```", "")
         curriculum = json.loads(json_string)
         print("✅ New curriculum generated successfully!")
@@ -113,9 +111,7 @@ def generate_lesson_content(lesson_title):
     """Generates the content for one long-form lesson and its promotional short."""
     print(f"🤖 Generating content for lesson: '{lesson_title}'...")
     try:
-        genai.configure(api_key=os.environ["GOOGLE_API_KEY"])
-        # model = genai.GenerativeModel('gemini-1.5-flash')
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        client = genai.Client(api_key=os.environ["GOOGLE_API_KEY"])
         prompt = f"""
         You are creating a lesson for the 'AI for Developers by {YOUR_NAME}' series. The topic is '{lesson_title}'.
         The style is: Assume the viewer is a beginner developer or non-tech person who wants to learn AI from scratch.
@@ -128,7 +124,7 @@ def generate_lesson_content(lesson_title):
 
         Return only valid JSON.
         """
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt)
         json_string = response.text.strip().replace("```json", "").replace("```", "")
         content = json.loads(json_string)
         print("✅ Lesson content generated successfully.")

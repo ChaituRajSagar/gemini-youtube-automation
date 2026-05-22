@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import datetime
 import time
@@ -182,6 +183,7 @@ def main():
                 print("⚠️ Curriculum generated but no valid lessons found.")
                 return
 
+        failed_lessons = []
         for lesson_index, lesson in pending[:LESSONS_PER_RUN]:
             try:
                 video_id = produce_lesson_videos(lesson)
@@ -195,17 +197,26 @@ def main():
                     else:
                         print(f"⚠️ Could not find lesson in plan to mark as complete: {lesson['title']}")
                 else:
-                    print(f"⚠️ Upload failed: {lesson['title']}")
+                    print(f"❌ Upload failed (no video ID returned): {lesson['title']}")
+                    failed_lessons.append(lesson['title'])
             except Exception as e:
                 print(f"❌ Failed producing lesson: {lesson['title']}")
                 traceback.print_exc()
+                failed_lessons.append(lesson['title'])
             finally:
                 update_content_plan(plan)
-                print("📦 Content plan updated.")
-                print(f"✅ Updated content plan for lesson: {lesson['title']}")
+                print("📦 Content plan saved.")
+
+        if failed_lessons:
+            print(f"\n❌ PIPELINE FAILED — {len(failed_lessons)} lesson(s) did not complete:")
+            for title in failed_lessons:
+                print(f"   - {title}")
+            sys.exit(1)
+
     except Exception as e:
         print("❌ Critical error in main()")
         traceback.print_exc()
+        sys.exit(1)
 
     try:
         for file in OUTPUT_DIR.glob("*.wav"):
