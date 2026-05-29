@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import json
 import datetime
@@ -50,7 +51,8 @@ def update_content_plan(plan):
 
 def produce_lesson_videos(lesson):
     print(f"\n▶️ Starting production for Lesson: '{lesson['title']}'")
-    unique_id = f"{datetime.datetime.now().strftime('%Y%m%d')}_{lesson['chapter']}_{lesson['part']}"
+    chapter_safe = re.sub(r'[^\w]', '_', str(lesson['chapter'])).strip('_')
+    unique_id = f"{datetime.datetime.now().strftime('%Y%m%d')}_{chapter_safe}_{lesson['part']}"
 
     lesson_content = generate_lesson_content(lesson['title'])
 
