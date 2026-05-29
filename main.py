@@ -52,7 +52,8 @@ def update_content_plan(plan):
 def produce_lesson_videos(lesson):
     print(f"\n▶️ Starting production for Lesson: '{lesson['title']}'")
     chapter_safe = re.sub(r'[^\w]', '_', str(lesson['chapter'])).strip('_')
-    unique_id = f"{datetime.datetime.now().strftime('%Y%m%d')}_{chapter_safe}_{lesson['part']}"
+    part_safe = re.sub(r'[^\w]', '_', str(lesson['part'])).strip('_')
+    unique_id = f"{datetime.datetime.now().strftime('%Y%m%d')}_{chapter_safe}_{part_safe}"
 
     lesson_content = generate_lesson_content(lesson['title'])
 
